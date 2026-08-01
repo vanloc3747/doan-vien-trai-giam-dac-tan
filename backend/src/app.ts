@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { membersRouter } from './routes/members.routes';
 import { dashboardRouter } from './routes/dashboard.routes';
 import { chaptersRouter } from './routes/chapters.routes';
+import { departmentsRouter } from './routes/departments.routes';
 import { authRouter } from './routes/auth.routes';
 import { usersRouter } from './routes/users.routes';
 import { requireAuth } from './middleware/auth';
@@ -22,6 +23,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/members', requireAuth, membersRouter);
 app.use('/api/dashboard', requireAuth, dashboardRouter);
 app.use('/api/chapters', requireAuth, chaptersRouter);
+app.use('/api/departments', requireAuth, departmentsRouter);
 app.use('/api/users', requireAuth, usersRouter);
 
 app.use(errorHandler);

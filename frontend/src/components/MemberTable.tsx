@@ -79,7 +79,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
       dateOfBirth: values.dateOfBirth,
       gender: values.gender,
       chapterId: values.chapterId,
-      department: values.department || null,
+      departmentId: values.departmentId,
       joinDate: values.joinDate,
       memberType: values.memberType,
       roleTitle: values.roleTitle || null,

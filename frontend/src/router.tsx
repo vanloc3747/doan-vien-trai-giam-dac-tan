@@ -10,6 +10,7 @@ import { ApproveMembersPage } from './pages/ApproveMembersPage';
 import { TransferActivityPage } from './pages/TransferActivityPage';
 import { UpdateInfoPage } from './pages/UpdateInfoPage';
 import { ChaptersPage } from './pages/ChaptersPage';
+import { DepartmentsPage } from './pages/DepartmentsPage';
 import { ExecutiveCommitteePage } from './pages/ExecutiveCommitteePage';
 import { TaskAssignmentPage } from './pages/TaskAssignmentPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -37,6 +38,7 @@ export const router = createBrowserRouter(
         { path: 'doan-vien/chuyen-sinh-hoat', element: <TransferActivityPage /> },
         { path: 'doan-vien/cap-nhat', element: <UpdateInfoPage /> },
         { path: 'to-chuc/chi-doan', element: <ChaptersPage /> },
+        { path: 'to-chuc/bo-phan-cong-tac', element: <DepartmentsPage /> },
         { path: 'to-chuc/bch', element: <ExecutiveCommitteePage /> },
         { path: 'to-chuc/phan-cong', element: <TaskAssignmentPage /> },
         { path: 'tien-ich/bao-cao', element: <ReportsPage /> },

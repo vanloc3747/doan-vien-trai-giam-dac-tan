@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { Member } from '../types';
 import { fetchChapters } from '../api/chapters';
+import { fetchDepartments } from '../api/departments';
 
 export interface MemberFormValues {
   fullName: string;
   dateOfBirth: string;
   gender: 'nam' | 'nu' | 'khac';
   chapterId: number | null;
-  department: string;
+  departmentId: number | null;
   joinDate: string;
   memberType: 'doan_vien' | 'dang_vien_sinh_hoat_doan';
   roleTitle: string;
@@ -23,7 +24,7 @@ const emptyValues: MemberFormValues = {
   dateOfBirth: '',
   gender: 'nam',
   chapterId: null,
-  department: '',
+  departmentId: null,
   joinDate: '',
   memberType: 'doan_vien',
   roleTitle: '',
@@ -43,6 +44,7 @@ interface MemberFormModalProps {
 export function MemberFormModal({ open, member, onClose, onSubmit, submitting }: MemberFormModalProps) {
   const [values, setValues] = useState<MemberFormValues>(emptyValues);
   const { data: chapters } = useQuery({ queryKey: ['chapters'], queryFn: fetchChapters });
+  const { data: departments } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
 
   useEffect(() => {
     if (member) {
@@ -51,7 +53,7 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
         dateOfBirth: member.dateOfBirth?.slice(0, 10) ?? '',
         gender: member.gender,
         chapterId: member.chapterId,
-        department: member.department ?? '',
+        departmentId: member.departmentId,
         joinDate: member.joinDate?.slice(0, 10) ?? '',
         memberType: member.memberType,
         roleTitle: member.roleTitle ?? '',
@@ -140,11 +142,20 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-600">Bộ phận công tác</label>
-              <input
-                value={values.department}
-                onChange={(e) => setValues({ ...values, department: e.target.value })}
+              <select
+                value={values.departmentId ?? ''}
+                onChange={(e) =>
+                  setValues({ ...values, departmentId: e.target.value ? parseInt(e.target.value, 10) : null })
+                }
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-              />
+              >
+                <option value="">-- Chọn bộ phận công tác --</option>
+                {(departments ?? []).map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

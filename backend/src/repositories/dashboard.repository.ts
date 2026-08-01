@@ -68,19 +68,21 @@ export async function getGenderDistribution() {
 
 export async function getDepartmentDistribution() {
   const result = await pool.query(
-    `SELECT department, COUNT(*) AS count FROM members
-     WHERE department IS NOT NULL
-     GROUP BY department ORDER BY count DESC`
+    `SELECT d.name AS department, COUNT(m.id) AS count
+     FROM members m
+     JOIN departments d ON d.id = m.department_id
+     GROUP BY d.name ORDER BY count DESC`
   );
   return result.rows.map((r) => ({ department: r.department, count: parseInt(r.count, 10) }));
 }
 
 export async function getBirthdaysThisMonth() {
   const result = await pool.query(
-    `SELECT id, full_name, date_of_birth, department
-     FROM members
-     WHERE EXTRACT(MONTH FROM date_of_birth) = EXTRACT(MONTH FROM CURRENT_DATE)
-     ORDER BY EXTRACT(DAY FROM date_of_birth)`
+    `SELECT m.id, m.full_name, m.date_of_birth, d.name AS department
+     FROM members m
+     LEFT JOIN departments d ON d.id = m.department_id
+     WHERE EXTRACT(MONTH FROM m.date_of_birth) = EXTRACT(MONTH FROM CURRENT_DATE)
+     ORDER BY EXTRACT(DAY FROM m.date_of_birth)`
   );
   return result.rows.map((r) => ({
     id: r.id,

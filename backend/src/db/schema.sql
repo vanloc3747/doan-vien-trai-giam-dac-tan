@@ -11,13 +11,19 @@ CREATE TABLE chapters (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE departments (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE members (
   id SERIAL PRIMARY KEY,
   full_name VARCHAR(150) NOT NULL,
   date_of_birth DATE NOT NULL,
   gender gender_enum NOT NULL,
   chapter_id INTEGER REFERENCES chapters(id) ON DELETE SET NULL,
-  department VARCHAR(100),
+  department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
   join_date DATE NOT NULL,
   member_type member_type_enum NOT NULL DEFAULT 'doan_vien',
   role_title VARCHAR(100),
@@ -31,7 +37,7 @@ CREATE TABLE members (
 
 CREATE INDEX idx_members_chapter ON members(chapter_id);
 CREATE INDEX idx_members_type ON members(member_type);
-CREATE INDEX idx_members_department ON members(department);
+CREATE INDEX idx_members_department ON members(department_id);
 CREATE INDEX idx_members_dob_month ON members ((EXTRACT(MONTH FROM date_of_birth)));
 CREATE INDEX idx_members_name_search ON members USING gin (to_tsvector('simple', full_name));
 

@@ -3,7 +3,7 @@ import type { Member, PaginatedResponse } from '../types';
 
 export interface MemberQuery {
   search?: string;
-  department?: string;
+  departmentId?: number;
   chapterId?: number;
   memberType?: string;
   page?: number;
@@ -13,7 +13,7 @@ export interface MemberQuery {
 export function fetchMembers(query: MemberQuery) {
   const params = new URLSearchParams();
   if (query.search) params.set('search', query.search);
-  if (query.department) params.set('department', query.department);
+  if (query.departmentId) params.set('departmentId', String(query.departmentId));
   if (query.chapterId) params.set('chapterId', String(query.chapterId));
   if (query.memberType) params.set('memberType', query.memberType);
   params.set('page', String(query.page ?? 1));
@@ -25,7 +25,7 @@ export function fetchMember(id: number) {
   return apiFetch<Member>(`/members/${id}`);
 }
 
-export type MemberFormInput = Omit<Member, 'id' | 'chapterName' | 'photoUrl'>;
+export type MemberFormInput = Omit<Member, 'id' | 'chapterName' | 'departmentName' | 'photoUrl'>;
 
 export function createMember(input: MemberFormInput) {
   return apiFetch<Member>('/members', { method: 'POST', body: JSON.stringify(input) });

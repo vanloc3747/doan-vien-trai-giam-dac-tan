@@ -2,7 +2,7 @@ import { pool } from '../db/pool';
 
 export interface MemberFilters {
   search?: string;
-  department?: string;
+  departmentId?: number;
   chapterId?: number;
   memberType?: string;
   page: number;
@@ -17,7 +17,8 @@ function mapMemberRow(row: any) {
     gender: row.gender,
     chapterId: row.chapter_id,
     chapterName: row.chapter_name ?? undefined,
-    department: row.department,
+    departmentId: row.department_id,
+    departmentName: row.department_name ?? undefined,
     joinDate: row.join_date,
     memberType: row.member_type,
     roleTitle: row.role_title,
@@ -36,9 +37,9 @@ export async function listMembers(filters: MemberFilters) {
     params.push(`%${filters.search}%`);
     conditions.push(`m.full_name ILIKE $${params.length}`);
   }
-  if (filters.department) {
-    params.push(filters.department);
-    conditions.push(`m.department = $${params.length}`);
+  if (filters.departmentId) {
+    params.push(filters.departmentId);
+    conditions.push(`m.department_id = $${params.length}`);
   }
   if (filters.chapterId) {
     params.push(filters.chapterId);
@@ -57,9 +58,10 @@ export async function listMembers(filters: MemberFilters) {
   const offset = (filters.page - 1) * filters.pageSize;
   params.push(filters.pageSize, offset);
   const dataResult = await pool.query(
-    `SELECT m.*, c.name AS chapter_name
+    `SELECT m.*, c.name AS chapter_name, d.name AS department_name
      FROM members m
      LEFT JOIN chapters c ON c.id = m.chapter_id
+     LEFT JOIN departments d ON d.id = m.department_id
      ${whereClause}
      ORDER BY m.id
      LIMIT $${params.length - 1} OFFSET $${params.length}`,
@@ -76,7 +78,11 @@ export async function listMembers(filters: MemberFilters) {
 
 export async function getMemberById(id: number) {
   const result = await pool.query(
-    `SELECT m.*, c.name AS chapter_name FROM members m LEFT JOIN chapters c ON c.id = m.chapter_id WHERE m.id = $1`,
+    `SELECT m.*, c.name AS chapter_name, d.name AS department_name
+     FROM members m
+     LEFT JOIN chapters c ON c.id = m.chapter_id
+     LEFT JOIN departments d ON d.id = m.department_id
+     WHERE m.id = $1`,
     [id]
   );
   return result.rows[0] ? mapMemberRow(result.rows[0]) : null;
@@ -87,7 +93,7 @@ export interface MemberInput {
   dateOfBirth: string;
   gender: 'nam' | 'nu' | 'khac';
   chapterId: number | null;
-  department: string | null;
+  departmentId: number | null;
   joinDate: string;
   memberType: 'doan_vien' | 'dang_vien_sinh_hoat_doan';
   roleTitle: string | null;
@@ -98,14 +104,14 @@ export interface MemberInput {
 
 export async function createMember(input: MemberInput) {
   const result = await pool.query(
-    `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department, join_date, member_type, role_title, phone, email, notes)
+    `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title, phone, email, notes)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
     [
       input.fullName,
       input.dateOfBirth,
       input.gender,
       input.chapterId,
-      input.department,
+      input.departmentId,
       input.joinDate,
       input.memberType,
       input.roleTitle,
@@ -121,7 +127,7 @@ export async function createMember(input: MemberInput) {
 
 export async function updateMember(id: number, input: MemberInput) {
   await pool.query(
-    `UPDATE members SET full_name=$1, date_of_birth=$2, gender=$3, chapter_id=$4, department=$5, join_date=$6,
+    `UPDATE members SET full_name=$1, date_of_birth=$2, gender=$3, chapter_id=$4, department_id=$5, join_date=$6,
        member_type=$7, role_title=$8, phone=$9, email=$10, notes=$11, updated_at=now()
      WHERE id=$12`,
     [
@@ -129,7 +135,7 @@ export async function updateMember(id: number, input: MemberInput) {
       input.dateOfBirth,
       input.gender,
       input.chapterId,
-      input.department,
+      input.departmentId,
       input.joinDate,
       input.memberType,
       input.roleTitle,

@@ -8,7 +8,8 @@ export interface Member {
   gender: Gender;
   chapterId: number | null;
   chapterName?: string;
-  department: string | null;
+  departmentId: number | null;
+  departmentName?: string;
   joinDate: string;
   memberType: MemberType;
   roleTitle: string | null;
@@ -26,6 +27,12 @@ export interface PaginatedResponse<T> {
 }
 
 export interface Chapter {
+  id: number;
+  name: string;
+  memberCount?: number;
+}
+
+export interface Department {
   id: number;
   name: string;
   memberCount?: number;

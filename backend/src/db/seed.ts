@@ -35,7 +35,9 @@ async function seed() {
   const client = await pool.connect();
   try {
     console.log('Đang xoá dữ liệu cũ...');
-    await client.query('TRUNCATE member_events, committee_positions, users, members, chapters RESTART IDENTITY CASCADE');
+    await client.query(
+      'TRUNCATE member_events, committee_positions, users, members, chapters, departments RESTART IDENTITY CASCADE'
+    );
 
     console.log('Đang tạo chi đoàn...');
     const chapterNames = ['Chi đoàn Văn phòng', 'Chi đoàn Trinh sát', 'Chi đoàn Quản giáo 1', 'Chi đoàn Quản giáo 2', 'Chi đoàn Hậu cần', 'Chi đoàn Kỹ thuật', 'Chi đoàn Y tế', 'Chi đoàn Bảo vệ - Cơ động', 'Chi đoàn Tham mưu', 'Chi đoàn Tổ chức - Cán bộ'];
@@ -45,6 +47,14 @@ async function seed() {
       chapterIds.push(res.rows[0].id);
     }
     console.log(`Đã tạo ${chapterIds.length} chi đoàn.`);
+
+    console.log('Đang tạo bộ phận công tác...');
+    const departmentIds: number[] = [];
+    for (const name of DEPARTMENTS) {
+      const res = await client.query('INSERT INTO departments (name) VALUES ($1) RETURNING id', [name]);
+      departmentIds.push(res.rows[0].id);
+    }
+    console.log(`Đã tạo ${departmentIds.length} bộ phận công tác.`);
 
     console.log('Đang tạo đoàn viên...');
     const now = new Date();
@@ -68,20 +78,20 @@ async function seed() {
       }
 
       const chapterId = randomItem(chapterIds);
-      const department = randomItem(DEPARTMENTS);
+      const departmentId = randomItem(departmentIds);
       const joinDate = randomDate(2015, 2026);
       const memberType = Math.random() < 0.9 ? 'doan_vien' : 'dang_vien_sinh_hoat_doan';
       const roleTitle = i === 0 ? 'Bí thư' : i === 1 ? 'Phó bí thư' : i < 6 ? 'Ủy viên BCH' : null;
 
       const res = await client.query(
-        `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department, join_date, member_type, role_title, phone, email)
+        `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title, phone, email)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
         [
           fullName,
           toDateString(dob),
           gender,
           chapterId,
-          department,
+          departmentId,
           toDateString(joinDate),
           memberType,
           roleTitle,

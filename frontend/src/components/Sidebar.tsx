@@ -8,6 +8,7 @@ import {
   Repeat,
   UserCog,
   Building2,
+  Briefcase,
   Users2,
   ClipboardList,
   BarChart3,
@@ -45,6 +46,7 @@ const navGroups: NavGroup[] = [
     title: 'QUẢN LÝ TỔ CHỨC',
     items: [
       { label: 'Chi đoàn', path: '/to-chuc/chi-doan', icon: Building2 },
+      { label: 'Bộ phận công tác', path: '/to-chuc/bo-phan-cong-tac', icon: Briefcase },
       { label: 'BCH Chi đoàn', path: '/to-chuc/bch', icon: Users2 },
       { label: 'Phân công nhiệm vụ', path: '/to-chuc/phan-cong', icon: ClipboardList },
     ],

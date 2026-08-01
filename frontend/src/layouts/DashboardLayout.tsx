@@ -10,6 +10,7 @@ const pageMeta: Record<string, { title: string; breadcrumb: string[] }> = {
   '/doan-vien/chuyen-sinh-hoat': { title: 'Chuyển sinh hoạt', breadcrumb: ['Trang chủ', 'Chuyển sinh hoạt'] },
   '/doan-vien/cap-nhat': { title: 'Cập nhật thông tin', breadcrumb: ['Trang chủ', 'Cập nhật thông tin'] },
   '/to-chuc/chi-doan': { title: 'Chi đoàn', breadcrumb: ['Trang chủ', 'Chi đoàn'] },
+  '/to-chuc/bo-phan-cong-tac': { title: 'Bộ phận công tác', breadcrumb: ['Trang chủ', 'Bộ phận công tác'] },
   '/to-chuc/bch': { title: 'BCH Chi đoàn', breadcrumb: ['Trang chủ', 'BCH Chi đoàn'] },
   '/to-chuc/phan-cong': { title: 'Phân công nhiệm vụ', breadcrumb: ['Trang chủ', 'Phân công nhiệm vụ'] },
   '/tien-ich/bao-cao': { title: 'Báo cáo – Thống kê', breadcrumb: ['Trang chủ', 'Báo cáo – Thống kê'] },
