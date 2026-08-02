@@ -1,50 +1,60 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, X } from 'lucide-react';
-import { fetchMembers, updateMemberType } from '../api/members';
+import { fetchPendingApprovalMembers, approveMember, deleteMember } from '../api/members';
 import { fetchPendingAccounts, updateAccountStatus } from '../api/auth';
-import { MemberTypeBadge } from '../components/MemberTypeBadge';
 import { useAuth } from '../context/AuthContext';
 
-function PendingMemberTypeTab() {
+function PendingMemberApprovalTab() {
   const queryClient = useQueryClient();
-  const { data } = useQuery({
-    queryKey: ['members', 'all-for-approval'],
-    queryFn: () => fetchMembers({ page: 1, pageSize: 100 }),
+  const { data } = useQuery({ queryKey: ['pending-members'], queryFn: fetchPendingApprovalMembers });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['pending-members'] });
+    queryClient.invalidateQueries({ queryKey: ['members'] });
+  };
+
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => approveMember(id),
+    onSuccess: invalidate,
   });
 
-  const mutation = useMutation({
-    mutationFn: ({ id, memberType }: { id: number; memberType: string }) => updateMemberType(id, memberType),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-    },
+  const rejectMutation = useMutation({
+    mutationFn: (id: number) => deleteMember(id),
+    onSuccess: invalidate,
   });
 
   return (
     <div className="space-y-2">
-      {(data?.data ?? []).map((member) => (
+      {(data ?? []).map((member) => (
         <div key={member.id} className="flex items-center justify-between rounded-lg border border-slate-100 p-3">
           <div>
             <div className="text-sm font-medium text-slate-700">{member.fullName}</div>
             <div className="text-xs text-slate-400">{member.chapterName ?? 'Chưa có chi đoàn'}</div>
           </div>
-          <div className="flex items-center gap-3">
-            <MemberTypeBadge memberType={member.memberType} />
+          <div className="flex items-center gap-2">
             <button
-              onClick={() =>
-                mutation.mutate({
-                  id: member.id,
-                  memberType: member.memberType === 'doan_vien' ? 'dang_vien_sinh_hoat_doan' : 'doan_vien',
-                })
-              }
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              onClick={() => approveMutation.mutate(member.id)}
+              className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
             >
-              Chuyển sang {member.memberType === 'doan_vien' ? 'Đảng viên sinh hoạt đoàn' : 'Đoàn viên'}
+              <Check size={14} /> Duyệt
+            </button>
+            <button
+              onClick={() => {
+                if (confirm(`Từ chối đoàn viên "${member.fullName}"? Bản ghi này sẽ bị xóa hẳn.`)) {
+                  rejectMutation.mutate(member.id);
+                }
+              }}
+              className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+            >
+              <X size={14} /> Từ chối
             </button>
           </div>
         </div>
       ))}
+      {(data ?? []).length === 0 && (
+        <div className="text-sm text-slate-400">Không có đoàn viên nào chờ duyệt.</div>
+      )}
     </div>
   );
 }
@@ -89,31 +99,37 @@ function PendingAccountsTab() {
 
 export function ApproveMembersPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState<'member-type' | 'accounts'>('member-type');
+  const [tab, setTab] = useState<'members' | 'accounts'>('members');
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="rounded-xl bg-white p-5 text-sm text-slate-500 shadow-sm">
+        Bạn không có quyền truy cập trang này.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
       <div className="mb-4 flex gap-2 border-b border-slate-100">
         <button
-          onClick={() => setTab('member-type')}
+          onClick={() => setTab('members')}
           className={`px-3 pb-3 text-sm font-medium ${
-            tab === 'member-type' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400'
+            tab === 'members' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400'
           }`}
         >
-          Duyệt phân loại đoàn viên
+          Duyệt đoàn viên mới
         </button>
-        {user?.role === 'admin' && (
-          <button
-            onClick={() => setTab('accounts')}
-            className={`px-3 pb-3 text-sm font-medium ${
-              tab === 'accounts' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400'
-            }`}
-          >
-            Duyệt tài khoản cán bộ
-          </button>
-        )}
+        <button
+          onClick={() => setTab('accounts')}
+          className={`px-3 pb-3 text-sm font-medium ${
+            tab === 'accounts' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400'
+          }`}
+        >
+          Duyệt tài khoản cán bộ
+        </button>
       </div>
-      {tab === 'member-type' ? <PendingMemberTypeTab /> : <PendingAccountsTab />}
+      {tab === 'members' ? <PendingMemberApprovalTab /> : <PendingAccountsTab />}
     </div>
   );
 }

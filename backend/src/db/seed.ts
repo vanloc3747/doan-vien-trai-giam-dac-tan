@@ -8,6 +8,7 @@ const TEN_NAM = ['An', 'Bình', 'Cường', 'Dũng', 'Duy', 'Đạt', 'Hải', '
 const TEN_NU = ['Anh', 'Chi', 'Diệp', 'Giang', 'Hà', 'Hoa', 'Huyền', 'Lan', 'Linh', 'Mai', 'My', 'Nga', 'Nhung', 'Phương', 'Quỳnh', 'Thảo', 'Trang', 'Trinh', 'Vy', 'Yến'];
 
 const DEPARTMENTS = ['Văn phòng', 'Trinh sát', 'Quản giáo', 'Hậu cần', 'Kỹ thuật', 'Y tế', 'Bảo vệ - Cơ động', 'Tổ chức - Cán bộ', 'Tham mưu', 'Hồ sơ'];
+const ROLE_TITLES = ['Bí thư', 'Phó bí thư', 'Ủy viên BCH'];
 
 function randomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -36,7 +37,7 @@ async function seed() {
   try {
     console.log('Đang xoá dữ liệu cũ...');
     await client.query(
-      'TRUNCATE member_events, committee_positions, users, members, chapters, departments RESTART IDENTITY CASCADE'
+      'TRUNCATE member_events, committee_positions, users, members, chapters, departments, role_titles RESTART IDENTITY CASCADE'
     );
 
     console.log('Đang tạo chi đoàn...');
@@ -55,6 +56,14 @@ async function seed() {
       departmentIds.push(res.rows[0].id);
     }
     console.log(`Đã tạo ${departmentIds.length} bộ phận công tác.`);
+
+    console.log('Đang tạo chức vụ...');
+    const roleTitleIds: number[] = [];
+    for (const name of ROLE_TITLES) {
+      const res = await client.query('INSERT INTO role_titles (name) VALUES ($1) RETURNING id', [name]);
+      roleTitleIds.push(res.rows[0].id);
+    }
+    console.log(`Đã tạo ${roleTitleIds.length} chức vụ.`);
 
     console.log('Đang tạo đoàn viên...');
     const now = new Date();
@@ -81,10 +90,10 @@ async function seed() {
       const departmentId = randomItem(departmentIds);
       const joinDate = randomDate(2015, 2026);
       const memberType = Math.random() < 0.9 ? 'doan_vien' : 'dang_vien_sinh_hoat_doan';
-      const roleTitle = i === 0 ? 'Bí thư' : i === 1 ? 'Phó bí thư' : i < 6 ? 'Ủy viên BCH' : null;
+      const roleTitleId = i === 0 ? roleTitleIds[0] : i === 1 ? roleTitleIds[1] : i < 6 ? roleTitleIds[2] : null;
 
       const res = await client.query(
-        `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title, phone, email)
+        `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title_id, phone, email)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
         [
           fullName,
@@ -94,7 +103,7 @@ async function seed() {
           departmentId,
           toDateString(joinDate),
           memberType,
-          roleTitle,
+          roleTitleId,
           `09${Math.floor(10000000 + Math.random() * 89999999)}`,
           null,
         ]

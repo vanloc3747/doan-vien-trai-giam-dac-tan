@@ -7,6 +7,8 @@ import {
   createMember,
   updateMember,
   deleteMember,
+  uploadMemberPhoto,
+  resolveUploadUrl,
   type MemberFormInput,
 } from '../api/members';
 import type { Member } from '../types';
@@ -14,12 +16,18 @@ import { MemberFilters } from './MemberFilters';
 import { MemberTypeBadge } from './MemberTypeBadge';
 import { Pagination } from './Pagination';
 import { MemberFormModal, type MemberFormValues } from './MemberFormModal';
+import { MemberDetailModal } from './MemberDetailModal';
+import { useAuth } from '../context/AuthContext';
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('vi-VN');
 }
 
 export function MemberTable({ embedded = false }: { embedded?: boolean }) {
+  const { user } = useAuth();
+  const managedChapterId = user?.role !== 'admin' ? user?.managedChapterId ?? null : null;
+  const canManage = user?.role === 'admin' || managedChapterId != null;
+
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [chapterId, setChapterId] = useState('');
@@ -28,15 +36,18 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
   const [pageSize, setPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [viewingMember, setViewingMember] = useState<Member | null>(null);
+
+  const effectiveChapterId = managedChapterId != null ? String(managedChapterId) : chapterId;
 
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
-    queryKey: ['members', { search, chapterId, memberType, page, pageSize }],
+    queryKey: ['members', { search, chapterId: effectiveChapterId, memberType, page, pageSize }],
     queryFn: () =>
       fetchMembers({
         search: search || undefined,
-        chapterId: chapterId ? parseInt(chapterId, 10) : undefined,
+        chapterId: effectiveChapterId ? parseInt(effectiveChapterId, 10) : undefined,
         memberType: memberType || undefined,
         page,
         pageSize,
@@ -52,7 +63,10 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
   };
 
   const createMutation = useMutation({
-    mutationFn: (input: MemberFormInput) => createMember(input),
+    mutationFn: async ({ input, photoFile }: { input: MemberFormInput; photoFile: File | null }) => {
+      const member = await createMember(input);
+      return photoFile ? uploadMemberPhoto(member.id, photoFile) : member;
+    },
     onSuccess: () => {
       invalidateAll();
       setModalOpen(false);
@@ -60,7 +74,18 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, input }: { id: number; input: MemberFormInput }) => updateMember(id, input),
+    mutationFn: async ({
+      id,
+      input,
+      photoFile,
+    }: {
+      id: number;
+      input: MemberFormInput;
+      photoFile: File | null;
+    }) => {
+      const member = await updateMember(id, input);
+      return photoFile ? uploadMemberPhoto(id, photoFile) : member;
+    },
     onSuccess: () => {
       invalidateAll();
       setModalOpen(false);
@@ -73,7 +98,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
     onSuccess: () => invalidateAll(),
   });
 
-  const handleSubmit = (values: MemberFormValues) => {
+  const handleSubmit = (values: MemberFormValues, photoFile: File | null) => {
     const input: MemberFormInput = {
       fullName: values.fullName,
       dateOfBirth: values.dateOfBirth,
@@ -82,15 +107,15 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
       departmentId: values.departmentId,
       joinDate: values.joinDate,
       memberType: values.memberType,
-      roleTitle: values.roleTitle || null,
+      roleTitleId: values.roleTitleId,
       phone: values.phone || null,
       email: values.email || null,
       notes: values.notes || null,
     };
     if (editingMember) {
-      updateMutation.mutate({ id: editingMember.id, input });
+      updateMutation.mutate({ id: editingMember.id, input, photoFile });
     } else {
-      createMutation.mutate(input);
+      createMutation.mutate({ input, photoFile });
     }
   };
 
@@ -106,15 +131,17 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
         <h3 className="font-semibold text-slate-800">Danh sách đoàn viên</h3>
         {!embedded && (
           <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setEditingMember(null);
-                setModalOpen(true);
-              }}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              <Plus size={16} /> Thêm đoàn viên
-            </button>
+            {canManage && (
+              <button
+                onClick={() => {
+                  setEditingMember(null);
+                  setModalOpen(true);
+                }}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Plus size={16} /> Thêm đoàn viên
+              </button>
+            )}
             <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
               <Download size={16} /> Xuất Excel
             </button>
@@ -129,7 +156,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
             setSearch(v);
             setPage(1);
           }}
-          chapterId={chapterId}
+          chapterId={effectiveChapterId}
           onChapterChange={(v) => {
             setChapterId(v);
             setPage(1);
@@ -139,6 +166,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
             setMemberType(v);
             setPage(1);
           }}
+          lockChapterId={managedChapterId}
         />
       </div>
 
@@ -163,10 +191,23 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
                 <td className="py-3 pr-3 text-slate-500">{(page - 1) * pageSize + idx + 1}</td>
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500">
-                      {member.fullName.charAt(0)}
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-xs font-semibold text-slate-500">
+                      {member.photoUrl ? (
+                        <img
+                          src={resolveUploadUrl(member.photoUrl)}
+                          alt={member.fullName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        member.fullName.charAt(0)
+                      )}
                     </div>
                     <span className="font-medium text-slate-700">{member.fullName}</span>
+                    {member.approvalStatus === 'pending' && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
+                        Chờ duyệt
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="py-3 pr-3 text-slate-500">{formatDate(member.dateOfBirth)}</td>
@@ -178,25 +219,33 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
                 <td className="py-3 pr-3">
                   <MemberTypeBadge memberType={member.memberType} />
                 </td>
-                <td className="py-3 pr-3 text-slate-500">{member.roleTitle ?? '-'}</td>
+                <td className="py-3 pr-3 text-slate-500">{member.roleTitleName ?? '-'}</td>
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-2 text-slate-400">
-                    <button className="hover:text-blue-600" title="Xem">
-                      <Eye size={16} />
-                    </button>
                     <button
                       className="hover:text-blue-600"
-                      title="Sửa"
-                      onClick={() => {
-                        setEditingMember(member);
-                        setModalOpen(true);
-                      }}
+                      title="Xem"
+                      onClick={() => setViewingMember(member)}
                     >
-                      <Pencil size={16} />
+                      <Eye size={16} />
                     </button>
-                    <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(member)}>
-                      <Trash2 size={16} />
-                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          className="hover:text-blue-600"
+                          title="Sửa"
+                          onClick={() => {
+                            setEditingMember(member);
+                            setModalOpen(true);
+                          }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(member)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -225,7 +274,10 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
         }}
         onSubmit={handleSubmit}
         submitting={createMutation.isPending || updateMutation.isPending}
+        lockedChapterId={managedChapterId}
       />
+
+      <MemberDetailModal member={viewingMember} onClose={() => setViewingMember(null)} />
     </div>
   );
 }

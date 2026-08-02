@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Topbar } from '../components/Topbar';
@@ -5,13 +6,15 @@ import { Topbar } from '../components/Topbar';
 const pageMeta: Record<string, { title: string; breadcrumb: string[] }> = {
   '/': { title: 'Tổng quan', breadcrumb: ['Trang chủ', 'Tổng quan'] },
   '/doan-vien': { title: 'Danh sách đoàn viên', breadcrumb: ['Trang chủ', 'Danh sách đoàn viên'] },
-  '/doan-vien/them': { title: 'Thêm đoàn viên', breadcrumb: ['Trang chủ', 'Thêm đoàn viên'] },
+  '/doan-vien/khen-thuong-ky-luat': {
+    title: 'Khen thưởng - Kỷ luật',
+    breadcrumb: ['Trang chủ', 'Khen thưởng - Kỷ luật'],
+  },
   '/doan-vien/xet-duyet': { title: 'Xét duyệt đoàn viên', breadcrumb: ['Trang chủ', 'Xét duyệt đoàn viên'] },
-  '/doan-vien/chuyen-sinh-hoat': { title: 'Chuyển sinh hoạt', breadcrumb: ['Trang chủ', 'Chuyển sinh hoạt'] },
-  '/doan-vien/cap-nhat': { title: 'Cập nhật thông tin', breadcrumb: ['Trang chủ', 'Cập nhật thông tin'] },
   '/to-chuc/chi-doan': { title: 'Chi đoàn', breadcrumb: ['Trang chủ', 'Chi đoàn'] },
   '/to-chuc/bo-phan-cong-tac': { title: 'Bộ phận công tác', breadcrumb: ['Trang chủ', 'Bộ phận công tác'] },
-  '/to-chuc/bch': { title: 'BCH Chi đoàn', breadcrumb: ['Trang chủ', 'BCH Chi đoàn'] },
+  '/to-chuc/chuc-vu': { title: 'Quản lý chức vụ đoàn', breadcrumb: ['Trang chủ', 'Quản lý chức vụ đoàn'] },
+  '/to-chuc/tai-khoan': { title: 'Quản lý tài khoản', breadcrumb: ['Trang chủ', 'Quản lý tài khoản'] },
   '/to-chuc/phan-cong': { title: 'Phân công nhiệm vụ', breadcrumb: ['Trang chủ', 'Phân công nhiệm vụ'] },
   '/tien-ich/bao-cao': { title: 'Báo cáo – Thống kê', breadcrumb: ['Trang chủ', 'Báo cáo – Thống kê'] },
   '/tien-ich/thong-bao': { title: 'Thông báo', breadcrumb: ['Trang chủ', 'Thông báo'] },
@@ -23,12 +26,17 @@ const pageMeta: Record<string, { title: string; breadcrumb: string[] }> = {
 export function DashboardLayout() {
   const location = useLocation();
   const meta = pageMeta[location.pathname] ?? { title: 'Trang quản lý', breadcrumb: ['Trang chủ'] };
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className="flex h-screen bg-slate-100">
-      <Sidebar />
+      <Sidebar open={sidebarOpen} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar title={meta.title} breadcrumb={meta.breadcrumb} />
+        <Topbar
+          title={meta.title}
+          breadcrumb={meta.breadcrumb}
+          onToggleSidebar={() => setSidebarOpen((v) => !v)}
+        />
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>

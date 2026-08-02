@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { X, User } from 'lucide-react';
 import type { Member } from '../types';
 import { fetchChapters } from '../api/chapters';
 import { fetchDepartments } from '../api/departments';
+import { fetchRoleTitles } from '../api/role-titles';
+import { resolveUploadUrl } from '../api/members';
 
 export interface MemberFormValues {
   fullName: string;
@@ -13,7 +15,7 @@ export interface MemberFormValues {
   departmentId: number | null;
   joinDate: string;
   memberType: 'doan_vien' | 'dang_vien_sinh_hoat_doan';
-  roleTitle: string;
+  roleTitleId: number | null;
   phone: string;
   email: string;
   notes: string;
@@ -27,7 +29,7 @@ const emptyValues: MemberFormValues = {
   departmentId: null,
   joinDate: '',
   memberType: 'doan_vien',
-  roleTitle: '',
+  roleTitleId: null,
   phone: '',
   email: '',
   notes: '',
@@ -37,14 +39,25 @@ interface MemberFormModalProps {
   open: boolean;
   member: Member | null;
   onClose: () => void;
-  onSubmit: (values: MemberFormValues) => void;
+  onSubmit: (values: MemberFormValues, photoFile: File | null) => void;
   submitting?: boolean;
+  lockedChapterId?: number | null;
 }
 
-export function MemberFormModal({ open, member, onClose, onSubmit, submitting }: MemberFormModalProps) {
+export function MemberFormModal({
+  open,
+  member,
+  onClose,
+  onSubmit,
+  submitting,
+  lockedChapterId,
+}: MemberFormModalProps) {
   const [values, setValues] = useState<MemberFormValues>(emptyValues);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const { data: chapters } = useQuery({ queryKey: ['chapters'], queryFn: fetchChapters });
   const { data: departments } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
+  const { data: roleTitles } = useQuery({ queryKey: ['role-titles'], queryFn: fetchRoleTitles });
 
   useEffect(() => {
     if (member) {
@@ -52,19 +65,31 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
         fullName: member.fullName,
         dateOfBirth: member.dateOfBirth?.slice(0, 10) ?? '',
         gender: member.gender,
-        chapterId: member.chapterId,
+        chapterId: lockedChapterId ?? member.chapterId,
         departmentId: member.departmentId,
         joinDate: member.joinDate?.slice(0, 10) ?? '',
         memberType: member.memberType,
-        roleTitle: member.roleTitle ?? '',
+        roleTitleId: member.roleTitleId,
         phone: member.phone ?? '',
         email: member.email ?? '',
         notes: member.notes ?? '',
       });
+      setPhotoPreview(member.photoUrl ? resolveUploadUrl(member.photoUrl) : null);
     } else {
-      setValues(emptyValues);
+      setValues({ ...emptyValues, chapterId: lockedChapterId ?? null });
+      setPhotoPreview(null);
     }
-  }, [member, open]);
+    setPhotoFile(null);
+  }, [member, open, lockedChapterId]);
+
+  const handlePhotoChange = (file: File | null) => {
+    setPhotoFile(file);
+    if (file) {
+      setPhotoPreview(URL.createObjectURL(file));
+    } else {
+      setPhotoPreview(member?.photoUrl ? resolveUploadUrl(member.photoUrl) : null);
+    }
+  };
 
   if (!open) return null;
 
@@ -83,10 +108,29 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit(values);
+            onSubmit(values, photoFile);
           }}
           className="space-y-3"
         >
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-400">
+              {photoPreview ? (
+                <img src={photoPreview} alt="Ảnh đại diện" className="h-full w-full object-cover" />
+              ) : (
+                <User size={28} />
+              )}
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-600">Ảnh đại diện</label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+                className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-600 hover:file:bg-slate-200"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-600">Họ và tên</label>
             <input
@@ -127,10 +171,11 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
               <label className="mb-1 block text-sm font-medium text-slate-600">Chi đoàn</label>
               <select
                 value={values.chapterId ?? ''}
+                disabled={lockedChapterId != null}
                 onChange={(e) =>
                   setValues({ ...values, chapterId: e.target.value ? parseInt(e.target.value, 10) : null })
                 }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400 disabled:bg-slate-50 disabled:text-slate-400"
               >
                 <option value="">-- Chọn chi đoàn --</option>
                 {(chapters ?? []).map((c) => (
@@ -188,11 +233,20 @@ export function MemberFormModal({ open, member, onClose, onSubmit, submitting }:
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-600">Chức vụ</label>
-              <input
-                value={values.roleTitle}
-                onChange={(e) => setValues({ ...values, roleTitle: e.target.value })}
+              <select
+                value={values.roleTitleId ?? ''}
+                onChange={(e) =>
+                  setValues({ ...values, roleTitleId: e.target.value ? parseInt(e.target.value, 10) : null })
+                }
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-              />
+              >
+                <option value="">-- Chọn chức vụ --</option>
+                {(roleTitles ?? []).map((rt) => (
+                  <option key={rt.id} value={rt.id}>
+                    {rt.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-600">Số điện thoại</label>

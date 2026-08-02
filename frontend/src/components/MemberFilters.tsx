@@ -9,6 +9,7 @@ interface MemberFiltersProps {
   onChapterChange: (value: string) => void;
   memberType: string;
   onMemberTypeChange: (value: string) => void;
+  lockChapterId?: number | null;
 }
 
 export function MemberFilters({
@@ -18,6 +19,7 @@ export function MemberFilters({
   onChapterChange,
   memberType,
   onMemberTypeChange,
+  lockChapterId,
 }: MemberFiltersProps) {
   const { data: chapters } = useQuery({ queryKey: ['chapters'], queryFn: fetchChapters });
 
@@ -32,18 +34,20 @@ export function MemberFilters({
           className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-400"
         />
       </div>
-      <select
-        value={chapterId}
-        onChange={(e) => onChapterChange(e.target.value)}
-        className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600"
-      >
-        <option value="">-- Chi đoàn --</option>
-        {(chapters ?? []).map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+      {lockChapterId == null && (
+        <select
+          value={chapterId}
+          onChange={(e) => onChapterChange(e.target.value)}
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600"
+        >
+          <option value="">-- Chi đoàn --</option>
+          {(chapters ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      )}
       <select
         value={memberType}
         onChange={(e) => onMemberTypeChange(e.target.value)}

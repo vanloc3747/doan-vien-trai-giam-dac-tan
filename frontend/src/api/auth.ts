@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { AuthUser, PendingAccount } from '../types';
+import type { AuthUser, PendingAccount, UserAccount } from '../types';
 
 export function login(username: string, password: string) {
   return apiFetch<AuthUser>('/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
@@ -35,5 +35,16 @@ export function updateAccountStatus(id: number, status: 'active' | 'rejected') {
   return apiFetch<PendingAccount>(`/users/${id}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
+  });
+}
+
+export function fetchAllUsers() {
+  return apiFetch<UserAccount[]>('/users/all');
+}
+
+export function updateUserManagedChapter(id: number, chapterId: number | null) {
+  return apiFetch<UserAccount>(`/users/${id}/managed-chapter`, {
+    method: 'PATCH',
+    body: JSON.stringify({ chapterId }),
   });
 }

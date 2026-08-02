@@ -7,6 +7,7 @@ export interface UserRow {
   full_name: string;
   role: 'admin' | 'can_bo_doan';
   status: 'pending' | 'active' | 'rejected';
+  managed_chapter_id: number | null;
 }
 
 export async function findUserByUsername(username: string): Promise<UserRow | null> {
@@ -46,4 +47,24 @@ export async function updateUserStatus(id: number, status: 'active' | 'rejected'
 
 export async function updateUserPassword(id: number, passwordHash: string) {
   await pool.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, id]);
+}
+
+export async function listAllUsers() {
+  const result = await pool.query(
+    `SELECT u.id, u.username, u.full_name AS "fullName", u.role, u.status,
+            u.managed_chapter_id AS "managedChapterId", c.name AS "managedChapterName"
+     FROM users u
+     LEFT JOIN chapters c ON c.id = u.managed_chapter_id
+     ORDER BY u.created_at`
+  );
+  return result.rows;
+}
+
+export async function updateUserManagedChapter(id: number, chapterId: number | null) {
+  const result = await pool.query(
+    `UPDATE users SET managed_chapter_id = $1, updated_at = now() WHERE id = $2
+     RETURNING id, username, full_name AS "fullName", role, status, managed_chapter_id AS "managedChapterId"`,
+    [chapterId, id]
+  );
+  return result.rows[0] ?? null;
 }

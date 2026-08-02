@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, ApiError, API_BASE_URL } from './client';
 import type { Member, PaginatedResponse } from '../types';
 
 export interface MemberQuery {
@@ -25,7 +25,10 @@ export function fetchMember(id: number) {
   return apiFetch<Member>(`/members/${id}`);
 }
 
-export type MemberFormInput = Omit<Member, 'id' | 'chapterName' | 'departmentName' | 'photoUrl'>;
+export type MemberFormInput = Omit<
+  Member,
+  'id' | 'chapterName' | 'departmentName' | 'roleTitleName' | 'photoUrl' | 'approvalStatus'
+>;
 
 export function createMember(input: MemberFormInput) {
   return apiFetch<Member>('/members', { method: 'POST', body: JSON.stringify(input) });
@@ -51,4 +54,39 @@ export function transferMember(id: number, chapterId: number) {
     method: 'PATCH',
     body: JSON.stringify({ chapterId }),
   });
+}
+
+export function fetchPendingApprovalMembers() {
+  return apiFetch<Member[]>('/members/pending-approval');
+}
+
+export function approveMember(id: number) {
+  return apiFetch<Member>(`/members/${id}/approve`, { method: 'PATCH' });
+}
+
+export async function uploadMemberPhoto(id: number, file: File) {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const res = await fetch(`${API_BASE_URL}/members/${id}/photo`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (!res.ok) {
+    let message = 'Đã xảy ra lỗi khi tải ảnh lên';
+    try {
+      const body = await res.json();
+      message = body.error ?? message;
+    } catch {
+      // ignore parse error
+    }
+    throw new ApiError(res.status, message);
+  }
+  return res.json() as Promise<Member>;
+}
+
+const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
+
+export function resolveUploadUrl(path: string) {
+  return `${API_ORIGIN}${path}`;
 }

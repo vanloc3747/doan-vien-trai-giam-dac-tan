@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { findUserById } from '../repositories/users.repository';
 
 export interface AuthedRequest extends Request {
-  user?: { id: number; username: string; fullName: string; role: string };
+  user?: { id: number; username: string; fullName: string; role: string; managedChapterId: number | null };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -23,7 +23,13 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     if (!user || user.status !== 'active') {
       return res.status(401).json({ error: 'Tài khoản không hợp lệ hoặc chưa được duyệt' });
     }
-    req.user = { id: user.id, username: user.username, fullName: user.full_name, role: user.role };
+    req.user = {
+      id: user.id,
+      username: user.username,
+      fullName: user.full_name,
+      role: user.role,
+      managedChapterId: user.managed_chapter_id,
+    };
     next();
   } catch {
     return res.status(401).json({ error: 'Phiên đăng nhập không hợp lệ' });

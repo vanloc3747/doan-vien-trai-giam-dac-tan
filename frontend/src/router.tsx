@@ -5,13 +5,12 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { MemberListPage } from './pages/MemberListPage';
-import { AddMemberPage } from './pages/AddMemberPage';
 import { ApproveMembersPage } from './pages/ApproveMembersPage';
-import { TransferActivityPage } from './pages/TransferActivityPage';
-import { UpdateInfoPage } from './pages/UpdateInfoPage';
+import { CommendationsPage } from './pages/CommendationsPage';
 import { ChaptersPage } from './pages/ChaptersPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
-import { ExecutiveCommitteePage } from './pages/ExecutiveCommitteePage';
+import { RoleTitlesPage } from './pages/RoleTitlesPage';
+import { AccountsPage } from './pages/AccountsPage';
 import { TaskAssignmentPage } from './pages/TaskAssignmentPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
@@ -33,13 +32,12 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <OverviewPage /> },
         { path: 'doan-vien', element: <MemberListPage /> },
-        { path: 'doan-vien/them', element: <AddMemberPage /> },
+        { path: 'doan-vien/khen-thuong-ky-luat', element: <CommendationsPage /> },
         { path: 'doan-vien/xet-duyet', element: <ApproveMembersPage /> },
-        { path: 'doan-vien/chuyen-sinh-hoat', element: <TransferActivityPage /> },
-        { path: 'doan-vien/cap-nhat', element: <UpdateInfoPage /> },
         { path: 'to-chuc/chi-doan', element: <ChaptersPage /> },
         { path: 'to-chuc/bo-phan-cong-tac', element: <DepartmentsPage /> },
-        { path: 'to-chuc/bch', element: <ExecutiveCommitteePage /> },
+        { path: 'to-chuc/chuc-vu', element: <RoleTitlesPage /> },
+        { path: 'to-chuc/tai-khoan', element: <AccountsPage /> },
         { path: 'to-chuc/phan-cong', element: <TaskAssignmentPage /> },
         { path: 'tien-ich/bao-cao', element: <ReportsPage /> },
         { path: 'tien-ich/thong-bao', element: <NotificationsPage /> },

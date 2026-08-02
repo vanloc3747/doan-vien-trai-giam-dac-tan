@@ -1,5 +1,12 @@
 import { apiFetch } from './client';
-import type { DashboardStats, GenderDistributionItem, DepartmentDistributionItem, Birthday } from '../types';
+import type {
+  DashboardStats,
+  GenderDistributionItem,
+  DepartmentDistributionItem,
+  Birthday,
+  ReportDimension,
+  ReportItem,
+} from '../types';
 
 export function fetchDashboardStats() {
   return apiFetch<DashboardStats>('/dashboard/stats');
@@ -15,4 +22,8 @@ export function fetchDepartmentDistribution() {
 
 export function fetchBirthdays() {
   return apiFetch<Birthday[]>('/dashboard/birthdays');
+}
+
+export function fetchReport(groupBy: ReportDimension) {
+  return apiFetch<ReportItem[]>(`/dashboard/report?groupBy=${groupBy}`);
 }

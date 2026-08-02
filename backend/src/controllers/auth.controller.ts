@@ -61,6 +61,7 @@ export async function login(req: AuthedRequest, res: Response) {
     username: user.username,
     fullName: user.full_name,
     role: user.role,
+    managedChapterId: user.managed_chapter_id,
   });
 }
 

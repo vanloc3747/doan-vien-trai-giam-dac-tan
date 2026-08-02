@@ -21,11 +21,13 @@ function mapMemberRow(row: any) {
     departmentName: row.department_name ?? undefined,
     joinDate: row.join_date,
     memberType: row.member_type,
-    roleTitle: row.role_title,
+    roleTitleId: row.role_title_id,
+    roleTitleName: row.role_title_name ?? undefined,
     phone: row.phone,
     email: row.email,
     photoUrl: row.photo_url,
     notes: row.notes,
+    approvalStatus: row.approval_status,
   };
 }
 
@@ -58,10 +60,11 @@ export async function listMembers(filters: MemberFilters) {
   const offset = (filters.page - 1) * filters.pageSize;
   params.push(filters.pageSize, offset);
   const dataResult = await pool.query(
-    `SELECT m.*, c.name AS chapter_name, d.name AS department_name
+    `SELECT m.*, c.name AS chapter_name, d.name AS department_name, rt.name AS role_title_name
      FROM members m
      LEFT JOIN chapters c ON c.id = m.chapter_id
      LEFT JOIN departments d ON d.id = m.department_id
+     LEFT JOIN role_titles rt ON rt.id = m.role_title_id
      ${whereClause}
      ORDER BY m.id
      LIMIT $${params.length - 1} OFFSET $${params.length}`,
@@ -78,10 +81,11 @@ export async function listMembers(filters: MemberFilters) {
 
 export async function getMemberById(id: number) {
   const result = await pool.query(
-    `SELECT m.*, c.name AS chapter_name, d.name AS department_name
+    `SELECT m.*, c.name AS chapter_name, d.name AS department_name, rt.name AS role_title_name
      FROM members m
      LEFT JOIN chapters c ON c.id = m.chapter_id
      LEFT JOIN departments d ON d.id = m.department_id
+     LEFT JOIN role_titles rt ON rt.id = m.role_title_id
      WHERE m.id = $1`,
     [id]
   );
@@ -96,16 +100,17 @@ export interface MemberInput {
   departmentId: number | null;
   joinDate: string;
   memberType: 'doan_vien' | 'dang_vien_sinh_hoat_doan';
-  roleTitle: string | null;
+  roleTitleId: number | null;
   phone: string | null;
   email: string | null;
   notes: string | null;
+  approvalStatus: 'approved' | 'pending';
 }
 
 export async function createMember(input: MemberInput) {
   const result = await pool.query(
-    `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title, phone, email, notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
+    `INSERT INTO members (full_name, date_of_birth, gender, chapter_id, department_id, join_date, member_type, role_title_id, phone, email, notes, approval_status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
     [
       input.fullName,
       input.dateOfBirth,
@@ -114,10 +119,11 @@ export async function createMember(input: MemberInput) {
       input.departmentId,
       input.joinDate,
       input.memberType,
-      input.roleTitle,
+      input.roleTitleId,
       input.phone,
       input.email,
       input.notes,
+      input.approvalStatus,
     ]
   );
   const id = result.rows[0].id;
@@ -128,8 +134,8 @@ export async function createMember(input: MemberInput) {
 export async function updateMember(id: number, input: MemberInput) {
   await pool.query(
     `UPDATE members SET full_name=$1, date_of_birth=$2, gender=$3, chapter_id=$4, department_id=$5, join_date=$6,
-       member_type=$7, role_title=$8, phone=$9, email=$10, notes=$11, updated_at=now()
-     WHERE id=$12`,
+       member_type=$7, role_title_id=$8, phone=$9, email=$10, notes=$11, approval_status=$12, updated_at=now()
+     WHERE id=$13`,
     [
       input.fullName,
       input.dateOfBirth,
@@ -138,10 +144,11 @@ export async function updateMember(id: number, input: MemberInput) {
       input.departmentId,
       input.joinDate,
       input.memberType,
-      input.roleTitle,
+      input.roleTitleId,
       input.phone,
       input.email,
       input.notes,
+      input.approvalStatus,
       id,
     ]
   );
@@ -150,6 +157,29 @@ export async function updateMember(id: number, input: MemberInput) {
 
 export async function deleteMember(id: number) {
   await pool.query('DELETE FROM members WHERE id = $1', [id]);
+}
+
+export async function listPendingApprovalMembers() {
+  const result = await pool.query(
+    `SELECT m.*, c.name AS chapter_name, d.name AS department_name, rt.name AS role_title_name
+     FROM members m
+     LEFT JOIN chapters c ON c.id = m.chapter_id
+     LEFT JOIN departments d ON d.id = m.department_id
+     LEFT JOIN role_titles rt ON rt.id = m.role_title_id
+     WHERE m.approval_status = 'pending'
+     ORDER BY m.created_at DESC`
+  );
+  return result.rows.map(mapMemberRow);
+}
+
+export async function approveMemberRecord(id: number) {
+  await pool.query(`UPDATE members SET approval_status = 'approved', updated_at = now() WHERE id = $1`, [id]);
+  return getMemberById(id);
+}
+
+export async function updateMemberPhoto(id: number, photoUrl: string) {
+  await pool.query('UPDATE members SET photo_url = $1, updated_at = now() WHERE id = $2', [photoUrl, id]);
+  return getMemberById(id);
 }
 
 export async function updateMemberType(id: number, memberType: 'doan_vien' | 'dang_vien_sinh_hoat_doan') {
