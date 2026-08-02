@@ -77,3 +77,35 @@ export async function updateUserManagedChapter(id: number, chapterId: number | n
   );
   return result.rows[0] ?? null;
 }
+
+export async function createUserByAdmin(input: {
+  username: string;
+  passwordHash: string;
+  fullName: string;
+  role: 'admin' | 'can_bo_doan';
+  managedChapterId: number | null;
+}) {
+  const result = await pool.query(
+    `INSERT INTO users (username, password_hash, full_name, role, status, managed_chapter_id)
+     VALUES ($1, $2, $3, $4, 'active', $5)
+     RETURNING id, username, full_name AS "fullName", role, status, managed_chapter_id AS "managedChapterId"`,
+    [input.username, input.passwordHash, input.fullName, input.role, input.managedChapterId]
+  );
+  return result.rows[0];
+}
+
+export async function updateUserByAdmin(
+  id: number,
+  input: { fullName: string; role: 'admin' | 'can_bo_doan'; managedChapterId: number | null }
+) {
+  const result = await pool.query(
+    `UPDATE users SET full_name = $1, role = $2, managed_chapter_id = $3, updated_at = now() WHERE id = $4
+     RETURNING id, username, full_name AS "fullName", role, status, managed_chapter_id AS "managedChapterId"`,
+    [input.fullName, input.role, input.managedChapterId, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function deleteUser(id: number) {
+  await pool.query('DELETE FROM users WHERE id = $1', [id]);
+}

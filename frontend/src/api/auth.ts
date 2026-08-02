@@ -55,3 +55,36 @@ export function updateUserManagedChapter(id: number, chapterId: number | null) {
     body: JSON.stringify({ chapterId }),
   });
 }
+
+export interface CreateUserAccountInput {
+  username: string;
+  password: string;
+  fullName: string;
+  role: 'admin' | 'can_bo_doan';
+  managedChapterId: number | null;
+}
+
+export interface UpdateUserAccountInput {
+  fullName: string;
+  role: 'admin' | 'can_bo_doan';
+  managedChapterId: number | null;
+}
+
+export function createUserAccount(input: CreateUserAccountInput) {
+  return apiFetch<UserAccount>('/users', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function updateUserAccount(id: number, input: UpdateUserAccountInput) {
+  return apiFetch<UserAccount>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(input) });
+}
+
+export function deleteUserAccount(id: number) {
+  return apiFetch<void>(`/users/${id}`, { method: 'DELETE' });
+}
+
+export function resetUserPassword(id: number, newPassword: string) {
+  return apiFetch<{ message: string }>(`/users/${id}/password`, {
+    method: 'PATCH',
+    body: JSON.stringify({ newPassword }),
+  });
+}
