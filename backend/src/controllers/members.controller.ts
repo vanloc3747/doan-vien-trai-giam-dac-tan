@@ -1,10 +1,13 @@
-import fs from 'fs';
-import path from 'path';
 import { Response } from 'express';
 import { z } from 'zod';
 import { AuthedRequest } from '../middleware/auth';
-import { MEMBER_PHOTOS_DIR, MEMBER_PHOTOS_URL_PREFIX } from '../middleware/upload';
 import { assertManageableChapter } from '../utils/chapterScope';
+import {
+  uploadMemberPhoto as uploadMemberPhotoToStorage,
+  deleteMemberPhoto,
+  getMemberPhotoSignedUrl,
+  getMemberPhotoSignedUrls,
+} from '../lib/storage';
 import {
   listMembers,
   getMemberById,
@@ -32,6 +35,18 @@ const memberSchema = z.object({
   notes: z.string().nullable().optional(),
 });
 
+type MemberWithPhoto = { photoUrl?: string | null } & Record<string, unknown>;
+
+async function attachPhotoUrl<T extends MemberWithPhoto>(member: T): Promise<T> {
+  const signedUrl = await getMemberPhotoSignedUrl(member.photoUrl ?? null);
+  return { ...member, photoUrl: signedUrl };
+}
+
+async function attachPhotoUrls<T extends MemberWithPhoto>(members: T[]): Promise<T[]> {
+  const urls = await getMemberPhotoSignedUrls(members.map((m) => m.photoUrl ?? null));
+  return members.map((m, i) => ({ ...m, photoUrl: urls[i] }));
+}
+
 export async function getMembers(req: AuthedRequest, res: Response) {
   const page = parseInt((req.query.page as string) ?? '1', 10);
   const pageSize = parseInt((req.query.pageSize as string) ?? '10', 10);
@@ -47,7 +62,7 @@ export async function getMembers(req: AuthedRequest, res: Response) {
     page,
     pageSize,
   });
-  res.json(result);
+  res.json({ ...result, data: await attachPhotoUrls(result.data) });
 }
 
 export async function getMember(req: AuthedRequest, res: Response) {
@@ -57,7 +72,7 @@ export async function getMember(req: AuthedRequest, res: Response) {
   if (req.user!.role !== 'admin' && managedChapterId != null && member.chapterId !== managedChapterId) {
     return res.status(404).json({ error: 'Không tìm thấy đoàn viên' });
   }
-  res.json(member);
+  res.json(await attachPhotoUrl(member));
 }
 
 export async function postMember(req: AuthedRequest, res: Response) {
@@ -79,7 +94,7 @@ export async function postMember(req: AuthedRequest, res: Response) {
     notes: input.notes ?? null,
     approvalStatus,
   });
-  res.status(201).json(member);
+  res.status(201).json(await attachPhotoUrl(member!));
 }
 
 export async function putMember(req: AuthedRequest, res: Response) {
@@ -105,7 +120,7 @@ export async function putMember(req: AuthedRequest, res: Response) {
     notes: input.notes ?? null,
     approvalStatus,
   });
-  res.json(member);
+  res.json(await attachPhotoUrl(member!));
 }
 
 export async function removeMember(req: AuthedRequest, res: Response) {
@@ -114,6 +129,7 @@ export async function removeMember(req: AuthedRequest, res: Response) {
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy đoàn viên' });
   const scopeError = assertManageableChapter(req, existing.chapterId);
   if (scopeError) return res.status(403).json({ error: scopeError });
+  if (existing.photoUrl) await deleteMemberPhoto(existing.photoUrl);
   await deleteMember(id);
   res.status(204).send();
 }
@@ -127,25 +143,25 @@ export async function patchMemberType(req: AuthedRequest, res: Response) {
   const schema = z.object({ memberType: z.enum(['doan_vien', 'dang_vien_sinh_hoat_doan']) });
   const { memberType } = schema.parse(req.body);
   const member = await updateMemberType(id, memberType);
-  res.json(member);
+  res.json(await attachPhotoUrl(member!));
 }
 
 export async function patchMemberTransfer(req: AuthedRequest, res: Response) {
   const schema = z.object({ chapterId: z.number() });
   const { chapterId } = schema.parse(req.body);
   const member = await transferMemberChapter(parseInt(req.params.id as string, 10), chapterId);
-  res.json(member);
+  res.json(await attachPhotoUrl(member!));
 }
 
 export async function getPendingApprovalMembers(req: AuthedRequest, res: Response) {
-  res.json(await listPendingApprovalMembers());
+  res.json(await attachPhotoUrls(await listPendingApprovalMembers()));
 }
 
 export async function patchMemberApprove(req: AuthedRequest, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const member = await approveMemberRecord(id);
   if (!member) return res.status(404).json({ error: 'Không tìm thấy đoàn viên' });
-  res.json(member);
+  res.json(await attachPhotoUrl(member));
 }
 
 export async function uploadMemberPhotoHandler(req: AuthedRequest, res: Response) {
@@ -157,12 +173,9 @@ export async function uploadMemberPhotoHandler(req: AuthedRequest, res: Response
   const scopeError = assertManageableChapter(req, existing.chapterId);
   if (scopeError) return res.status(403).json({ error: scopeError });
 
-  if (existing.photoUrl) {
-    const oldFilename = path.basename(existing.photoUrl);
-    fs.unlink(path.join(MEMBER_PHOTOS_DIR, oldFilename), () => {});
-  }
+  const objectPath = await uploadMemberPhotoToStorage(req.file.buffer, req.file.mimetype);
+  if (existing.photoUrl) await deleteMemberPhoto(existing.photoUrl);
 
-  const photoUrl = `${MEMBER_PHOTOS_URL_PREFIX}/${req.file.filename}`;
-  const member = await updateMemberPhoto(id, photoUrl);
-  res.json(member);
+  const member = await updateMemberPhoto(id, objectPath);
+  res.json(await attachPhotoUrl(member!));
 }

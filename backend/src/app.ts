@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import path from 'path';
 import { membersRouter } from './routes/members.routes';
 import { dashboardRouter } from './routes/dashboard.routes';
 import { chaptersRouter } from './routes/chapters.routes';
@@ -22,7 +21,6 @@ export const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/members', requireAuth, membersRouter);

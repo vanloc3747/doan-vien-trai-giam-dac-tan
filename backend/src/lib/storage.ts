@@ -1,0 +1,77 @@
+import crypto from 'crypto';
+import { supabase } from './supabase';
+
+export const MEMBER_PHOTOS_BUCKET = 'member-photos';
+export const BRANDING_BUCKET = 'branding';
+
+const EXT_BY_MIME: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
+
+function randomFilename(prefix: string, mimetype: string) {
+  const ext = EXT_BY_MIME[mimetype] ?? '';
+  return `${prefix}-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+}
+
+async function uploadObject(bucket: string, prefix: string, buffer: Buffer, mimetype: string) {
+  const objectPath = randomFilename(prefix, mimetype);
+  const { error } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
+    contentType: mimetype,
+    upsert: false,
+  });
+  if (error) throw error;
+  return objectPath;
+}
+
+async function deleteObject(bucket: string, objectPath: string) {
+  await supabase.storage.from(bucket).remove([objectPath]);
+}
+
+export function uploadMemberPhoto(buffer: Buffer, mimetype: string) {
+  return uploadObject(MEMBER_PHOTOS_BUCKET, 'member', buffer, mimetype);
+}
+
+export function deleteMemberPhoto(objectPath: string) {
+  return deleteObject(MEMBER_PHOTOS_BUCKET, objectPath);
+}
+
+export async function getMemberPhotoSignedUrls(
+  paths: (string | null | undefined)[],
+  expiresIn = 3600
+): Promise<(string | null)[]> {
+  const uniquePaths = [...new Set(paths.filter((p): p is string => !!p))];
+  if (uniquePaths.length === 0) return paths.map(() => null);
+
+  const { data, error } = await supabase.storage
+    .from(MEMBER_PHOTOS_BUCKET)
+    .createSignedUrls(uniquePaths, expiresIn);
+  if (error) throw error;
+
+  const urlByPath = new Map<string, string | null>();
+  data.forEach((entry) => {
+    urlByPath.set(entry.path ?? '', entry.signedUrl ?? null);
+  });
+
+  return paths.map((p) => (p ? urlByPath.get(p) ?? null : null));
+}
+
+export async function getMemberPhotoSignedUrl(path: string | null | undefined): Promise<string | null> {
+  const [url] = await getMemberPhotoSignedUrls([path]);
+  return url;
+}
+
+export function uploadBrandingLogo(buffer: Buffer, mimetype: string) {
+  return uploadObject(BRANDING_BUCKET, 'logo', buffer, mimetype);
+}
+
+export function deleteBrandingLogo(objectPath: string) {
+  return deleteObject(BRANDING_BUCKET, objectPath);
+}
+
+export function getBrandingPublicUrl(objectPath: string | null): string | null {
+  if (!objectPath) return null;
+  const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(objectPath);
+  return data.publicUrl;
+}
