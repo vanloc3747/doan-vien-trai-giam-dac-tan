@@ -7,6 +7,7 @@ import {
   findUserById,
   createUser,
   updateUserPassword,
+  updateUserFullName,
 } from '../repositories/users.repository';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -87,4 +88,12 @@ export async function changePassword(req: AuthedRequest, res: Response) {
   const newHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(user.id, newHash);
   res.json({ message: 'Đổi mật khẩu thành công' });
+}
+
+export async function updateProfile(req: AuthedRequest, res: Response) {
+  const schema = z.object({ fullName: z.string().min(1) });
+  const { fullName } = schema.parse(req.body);
+
+  const updated = await updateUserFullName(req.user!.id, fullName);
+  res.json(updated);
 }

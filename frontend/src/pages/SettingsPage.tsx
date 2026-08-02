@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { changePassword } from '../api/auth';
+import { changePassword, updateProfile } from '../api/auth';
 import { ApiError } from '../api/client';
 import { fetchAppSettings, updateAppSettings, uploadAppLogo } from '../api/app-settings';
 import { resolveUploadUrl } from '../api/members';
@@ -106,6 +106,56 @@ function BrandingSettings() {
   );
 }
 
+function FullNameSettings() {
+  const { user, setUser } = useAuth();
+  const [fullName, setFullName] = useState(user?.fullName ?? '');
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setError(null);
+    setSubmitting(true);
+    try {
+      const updated = await updateProfile(fullName);
+      setUser(updated);
+      setMessage('Cập nhật họ và tên thành công');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Đã xảy ra lỗi');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <h3 className="mb-4 font-semibold text-slate-800">Cập nhật họ và tên</h3>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-600">Họ và tên</label>
+          <input
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+          />
+        </div>
+        {message && <div className="text-sm text-emerald-600">{message}</div>}
+        {error && <div className="text-sm text-red-500">{error}</div>}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          Lưu thay đổi
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
@@ -150,6 +200,8 @@ export function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <FullNameSettings />
 
       <div className="rounded-xl bg-white p-5 shadow-sm">
         <h3 className="mb-4 font-semibold text-slate-800">Đổi mật khẩu</h3>

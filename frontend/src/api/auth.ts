@@ -27,6 +27,13 @@ export function changePassword(currentPassword: string, newPassword: string) {
   });
 }
 
+export function updateProfile(fullName: string) {
+  return apiFetch<AuthUser>('/auth/me/profile', {
+    method: 'PATCH',
+    body: JSON.stringify({ fullName }),
+  });
+}
+
 export function fetchPendingAccounts() {
   return apiFetch<PendingAccount[]>('/users?status=pending');
 }

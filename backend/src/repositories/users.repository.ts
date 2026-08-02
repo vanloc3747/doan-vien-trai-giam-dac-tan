@@ -49,6 +49,15 @@ export async function updateUserPassword(id: number, passwordHash: string) {
   await pool.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, id]);
 }
 
+export async function updateUserFullName(id: number, fullName: string) {
+  const result = await pool.query(
+    `UPDATE users SET full_name = $1, updated_at = now() WHERE id = $2
+     RETURNING id, username, full_name AS "fullName", role, managed_chapter_id AS "managedChapterId"`,
+    [fullName, id]
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function listAllUsers() {
   const result = await pool.query(
     `SELECT u.id, u.username, u.full_name AS "fullName", u.role, u.status,

@@ -18,6 +18,7 @@ import { Pagination } from './Pagination';
 import { MemberFormModal, type MemberFormValues } from './MemberFormModal';
 import { MemberDetailModal } from './MemberDetailModal';
 import { useAuth } from '../context/AuthContext';
+import { exportMembersToExcel } from '../utils/exportMembers';
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('vi-VN');
@@ -37,6 +38,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const effectiveChapterId = managedChapterId != null ? String(managedChapterId) : chapterId;
 
@@ -125,6 +127,22 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const result = await fetchMembers({
+        search: search || undefined,
+        chapterId: effectiveChapterId ? parseInt(effectiveChapterId, 10) : undefined,
+        memberType: memberType || undefined,
+        page: 1,
+        pageSize: 10000,
+      });
+      exportMembersToExcel(result.data);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -142,8 +160,12 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
                 <Plus size={16} /> Thêm đoàn viên
               </button>
             )}
-            <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-              <Download size={16} /> Xuất Excel
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+            >
+              <Download size={16} /> {exporting ? 'Đang xuất...' : 'Xuất Excel'}
             </button>
           </div>
         )}
