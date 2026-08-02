@@ -40,7 +40,7 @@ export const router = createBrowserRouter(
         { path: 'to-chuc/chuc-vu', element: <RoleTitlesPage /> },
         { path: 'to-chuc/tai-khoan', element: <AccountsPage /> },
         { path: 'to-chuc/ke-hoach-hoat-dong', element: <ActivityPlansPage /> },
-        { path: 'to-chuc/bao-cao-ket-qua', element: <ActivityReportsPage /> },
+        { path: 'to-chuc/ket-qua-hoat-dong', element: <ActivityReportsPage /> },
         { path: 'tien-ich/bao-cao', element: <ReportsPage /> },
         { path: 'tien-ich/thong-bao', element: <NotificationsPage /> },
         { path: 'tien-ich/lich-cong-tac', element: <CalendarPage /> },

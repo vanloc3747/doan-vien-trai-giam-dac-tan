@@ -14,7 +14,8 @@ import { useAuth } from '../context/AuthContext';
 
 export function ActivityReportsPage() {
   const { user } = useAuth();
-  const canManage = user?.role === 'admin';
+  const canManageReport = (report: ActivityReport) =>
+    user?.role === 'admin' || report.reportedById === user?.id;
 
   const { data } = useQuery({ queryKey: ['activity-reports'], queryFn: () => fetchActivityReports() });
   const [modalOpen, setModalOpen] = useState(false);
@@ -70,7 +71,7 @@ export function ActivityReportsPage() {
   };
 
   const handleDelete = (report: ActivityReport) => {
-    if (confirm(`Xóa báo cáo kết quả của "${report.planTitle}"?`)) {
+    if (confirm(`Xóa kết quả hoạt động của "${report.planTitle}"?`)) {
       deleteMutation.mutate(report.id);
     }
   };
@@ -78,26 +79,29 @@ export function ActivityReportsPage() {
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-800">Báo cáo kết quả hoạt động</h3>
-        {canManage && (
-          <button
-            onClick={() => {
-              setEditingReport(null);
-              setModalOpen(true);
-            }}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            <Plus size={16} /> Thêm báo cáo
-          </button>
-        )}
+        <h3 className="font-semibold text-slate-800">Kết quả hoạt động</h3>
+        <button
+          onClick={() => {
+            setEditingReport(null);
+            setModalOpen(true);
+          }}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          <Plus size={16} /> Thêm kết quả hoạt động
+        </button>
       </div>
 
       <div className="space-y-3">
         {(data ?? []).map((report) => (
           <div key={report.id} className="rounded-lg border border-slate-100 p-4">
             <div className="mb-2 flex items-start justify-between gap-3">
-              <h4 className="font-medium text-slate-700">{report.planTitle}</h4>
-              {canManage && (
+              <div>
+                <h4 className="font-medium text-slate-700">{report.planTitle}</h4>
+                <div className="text-xs text-slate-400">
+                  Người báo cáo: {report.reportedByName ?? 'Không rõ'}
+                </div>
+              </div>
+              {canManageReport(report) && (
                 <div className="flex shrink-0 items-center gap-2 text-slate-400">
                   <button
                     className="hover:text-blue-600"
@@ -132,7 +136,7 @@ export function ActivityReportsPage() {
           </div>
         ))}
         {(data ?? []).length === 0 && (
-          <div className="py-6 text-center text-sm text-slate-400">Chưa có báo cáo kết quả hoạt động nào.</div>
+          <div className="py-6 text-center text-sm text-slate-400">Chưa có kết quả hoạt động nào.</div>
         )}
       </div>
 

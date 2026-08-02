@@ -59,6 +59,9 @@ export async function putActivityReport(req: AuthedRequest, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const existing = await getActivityReportById(id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy báo cáo' });
+  if (req.user!.role !== 'admin' && existing.reportedById !== req.user!.id) {
+    return res.status(403).json({ error: 'Bạn chỉ có thể sửa báo cáo do mình đăng' });
+  }
 
   const planId = parseInt(req.body.planId as string, 10);
   const content = (req.body.content as string | undefined)?.trim();
@@ -84,6 +87,9 @@ export async function removeActivityReport(req: AuthedRequest, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const existing = await getActivityReportById(id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy báo cáo' });
+  if (req.user!.role !== 'admin' && existing.reportedById !== req.user!.id) {
+    return res.status(403).json({ error: 'Bạn chỉ có thể xóa báo cáo do mình đăng' });
+  }
 
   for (const image of existing.images) {
     await deleteActivityReportImage(image.imagePath);
@@ -96,6 +102,11 @@ export async function removeActivityReportImage(req: AuthedRequest, res: Respons
   const imageId = parseInt(req.params.imageId as string, 10);
   const image = await getActivityReportImageById(imageId);
   if (!image) return res.status(404).json({ error: 'Không tìm thấy hình ảnh' });
+
+  const report = await getActivityReportById(image.reportId);
+  if (report && req.user!.role !== 'admin' && report.reportedById !== req.user!.id) {
+    return res.status(403).json({ error: 'Bạn chỉ có thể xóa ảnh trong báo cáo do mình đăng' });
+  }
 
   await deleteActivityReportImage(image.imagePath);
   await deleteActivityReportImageById(imageId);

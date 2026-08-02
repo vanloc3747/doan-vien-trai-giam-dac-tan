@@ -60,15 +60,17 @@ export function Sidebar({ open }: { open: boolean }) {
               { label: 'Quản lý tài khoản', path: '/to-chuc/tai-khoan', icon: UserCog },
             ],
           },
-          {
-            title: 'CÔNG TÁC ĐOÀN',
-            items: [
-              { label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList },
-              { label: 'Báo cáo kết quả hoạt động', path: '/to-chuc/bao-cao-ket-qua', icon: Image },
-            ],
-          },
         ]
       : []),
+    {
+      title: 'CÔNG TÁC ĐOÀN',
+      items: [
+        ...(isAdmin
+          ? [{ label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList }]
+          : []),
+        { label: 'Kết quả hoạt động', path: '/to-chuc/ket-qua-hoat-dong', icon: Image },
+      ],
+    },
     {
       title: 'TIỆN ÍCH',
       items: [

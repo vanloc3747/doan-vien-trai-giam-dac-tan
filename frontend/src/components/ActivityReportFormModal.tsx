@@ -52,7 +52,7 @@ export function ActivityReportFormModal({
       <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-lg max-h-[90vh] overflow-y-auto">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-800">
-            {report ? 'Sửa báo cáo kết quả hoạt động' : 'Thêm báo cáo kết quả hoạt động'}
+            {report ? 'Sửa kết quả hoạt động' : 'Thêm kết quả hoạt động'}
           </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X size={20} />
