@@ -13,15 +13,15 @@ function mapRow(row: any) {
   };
 }
 
-// Trạng thái hiển thị được suy ra tự động: đã có ai báo cáo kết quả -> Đã hoàn thành;
-// chưa ai báo cáo và đã quá ngày kết thúc -> Chưa thực hiện; còn lại giữ giá trị admin
-// đã chọn thủ công (vd Đang thực hiện trong lúc chờ báo cáo).
+// Trạng thái hiển thị được suy ra hoàn toàn tự động, không còn phụ thuộc lựa chọn thủ công:
+// đã có ai báo cáo kết quả -> Đã hoàn thành; chưa ai báo cáo và đã quá ngày kết thúc ->
+// Chưa thực hiện; chưa ai báo cáo và chưa quá hạn -> Đang thực hiện.
 const SELECT_BASE = `
   SELECT ap.*, c.name AS chapter_name,
          CASE
            WHEN COUNT(ar.id) > 0 THEN 'da_hoan_thanh'
            WHEN ap.end_date < CURRENT_DATE THEN 'chua_thuc_hien'
-           ELSE ap.status
+           ELSE 'dang_thuc_hien'
          END AS computed_status
   FROM activity_plans ap
   LEFT JOIN chapters c ON c.id = ap.chapter_id

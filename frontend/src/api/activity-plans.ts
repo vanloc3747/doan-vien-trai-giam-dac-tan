@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { ActivityPlan, ActivityPlanStatus } from '../types';
+import type { ActivityPlan } from '../types';
 
 export interface ActivityPlanFormInput {
   title: string;
@@ -7,7 +7,6 @@ export interface ActivityPlanFormInput {
   endDate: string;
   content: string | null;
   chapterId: number | null;
-  status: ActivityPlanStatus;
 }
 
 export function fetchActivityPlans() {

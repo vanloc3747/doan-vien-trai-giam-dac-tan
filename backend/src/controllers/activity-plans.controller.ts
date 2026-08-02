@@ -15,7 +15,6 @@ const planSchema = z.object({
   endDate: z.string(),
   content: z.string().nullable().optional(),
   chapterId: z.number().nullable().optional(),
-  status: z.enum(['chua_thuc_hien', 'dang_thuc_hien', 'da_hoan_thanh']),
 });
 
 export async function getActivityPlans(req: AuthedRequest, res: Response) {
@@ -30,7 +29,7 @@ export async function postActivityPlan(req: AuthedRequest, res: Response) {
     endDate: input.endDate,
     content: input.content ?? null,
     chapterId: input.chapterId ?? null,
-    status: input.status,
+    status: 'chua_thuc_hien',
   });
   res.status(201).json(plan);
 }
@@ -47,7 +46,7 @@ export async function putActivityPlan(req: AuthedRequest, res: Response) {
     endDate: input.endDate,
     content: input.content ?? null,
     chapterId: input.chapterId ?? null,
-    status: input.status,
+    status: 'chua_thuc_hien',
   });
   res.json(plan);
 }

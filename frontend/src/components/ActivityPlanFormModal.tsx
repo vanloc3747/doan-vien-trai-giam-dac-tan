@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import type { ActivityPlan, ActivityPlanStatus } from '../types';
+import type { ActivityPlan } from '../types';
 import { fetchChapters } from '../api/chapters';
 import type { ActivityPlanFormInput } from '../api/activity-plans';
 
@@ -11,7 +11,6 @@ const emptyValues: ActivityPlanFormInput = {
   endDate: '',
   content: '',
   chapterId: null,
-  status: 'chua_thuc_hien',
 };
 
 interface ActivityPlanFormModalProps {
@@ -34,7 +33,6 @@ export function ActivityPlanFormModal({ open, plan, onClose, onSubmit, submittin
         endDate: plan.endDate?.slice(0, 10) ?? '',
         content: plan.content ?? '',
         chapterId: plan.chapterId,
-        status: plan.status,
       });
     } else {
       setValues(emptyValues);
@@ -95,36 +93,22 @@ export function ActivityPlanFormModal({ open, plan, onClose, onSubmit, submittin
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">Chi đoàn phụ trách</label>
-              <select
-                value={values.chapterId ?? ''}
-                onChange={(e) =>
-                  setValues({ ...values, chapterId: e.target.value ? parseInt(e.target.value, 10) : null })
-                }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-              >
-                <option value="">-- Toàn Đoàn --</option>
-                {(chapters ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-600">Trạng thái</label>
-              <select
-                value={values.status}
-                onChange={(e) => setValues({ ...values, status: e.target.value as ActivityPlanStatus })}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-              >
-                <option value="chua_thuc_hien">Chưa thực hiện</option>
-                <option value="dang_thuc_hien">Đang thực hiện</option>
-                <option value="da_hoan_thanh">Đã hoàn thành</option>
-              </select>
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-600">Chi đoàn phụ trách</label>
+            <select
+              value={values.chapterId ?? ''}
+              onChange={(e) =>
+                setValues({ ...values, chapterId: e.target.value ? parseInt(e.target.value, 10) : null })
+              }
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            >
+              <option value="">-- Toàn Đoàn --</option>
+              {(chapters ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
