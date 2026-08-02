@@ -123,6 +123,10 @@ export function Sidebar({ open }: { open: boolean }) {
             </div>
           ))}
         </nav>
+
+        <div className="border-t border-white/10 px-5 py-3 text-center text-[11px] text-blue-300">
+          Designer by Loc Lee
+        </div>
       </div>
     </aside>
   );
