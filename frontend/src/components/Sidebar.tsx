@@ -65,9 +65,7 @@ export function Sidebar({ open }: { open: boolean }) {
     {
       title: 'CÔNG TÁC ĐOÀN',
       items: [
-        ...(isAdmin
-          ? [{ label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList }]
-          : []),
+        { label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList },
         { label: 'Kết quả hoạt động', path: '/to-chuc/ket-qua-hoat-dong', icon: Image },
       ],
     },
