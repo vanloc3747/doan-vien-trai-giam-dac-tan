@@ -135,3 +135,9 @@ export interface CalendarNote {
   noteDate: string;
   content: string;
 }
+
+export interface CommendationStats {
+  totalByType: { khenThuong: number; kyLuat: number };
+  byChapter: { chapterName: string; khenThuong: number; kyLuat: number }[];
+  byMonth: { month: number; khenThuong: number; kyLuat: number }[];
+}

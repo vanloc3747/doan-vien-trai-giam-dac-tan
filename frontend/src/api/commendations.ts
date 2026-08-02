@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { Commendation, CommendationType } from '../types';
+import type { Commendation, CommendationType, CommendationStats } from '../types';
 
 export interface CommendationFormInput {
   memberId: number;
@@ -23,6 +23,10 @@ export function fetchCommendations(query: CommendationQuery = {}) {
   if (query.type) params.set('type', query.type);
   const qs = params.toString();
   return apiFetch<Commendation[]>(`/commendations${qs ? `?${qs}` : ''}`);
+}
+
+export function fetchCommendationStats() {
+  return apiFetch<CommendationStats>('/commendations/stats');
 }
 
 export function createCommendation(input: CommendationFormInput) {

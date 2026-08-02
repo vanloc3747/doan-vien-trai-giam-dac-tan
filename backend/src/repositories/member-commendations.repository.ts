@@ -101,3 +101,65 @@ export async function updateCommendation(id: number, input: CommendationInput) {
 export async function deleteCommendation(id: number) {
   await pool.query('DELETE FROM member_commendations WHERE id = $1', [id]);
 }
+
+export interface CommendationStats {
+  totalByType: { khenThuong: number; kyLuat: number };
+  byChapter: { chapterName: string; khenThuong: number; kyLuat: number }[];
+  byMonth: { month: number; khenThuong: number; kyLuat: number }[];
+}
+
+export async function getCommendationStats(chapterId?: number): Promise<CommendationStats> {
+  const conditions: string[] = [];
+  const params: any[] = [];
+  if (chapterId) {
+    params.push(chapterId);
+    conditions.push(`m.chapter_id = $${params.length}`);
+  }
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const result = await pool.query(
+    `SELECT mc.type, mc.decision_date, COALESCE(c.name, 'Chưa có chi đoàn') AS chapter_name
+     FROM member_commendations mc
+     JOIN members m ON m.id = mc.member_id
+     LEFT JOIN chapters c ON c.id = m.chapter_id
+     ${whereClause}`,
+    params
+  );
+
+  const totalByType = { khenThuong: 0, kyLuat: 0 };
+  const chapterMap = new Map<string, { khenThuong: number; kyLuat: number }>();
+  const monthMap = new Map<number, { khenThuong: number; kyLuat: number }>();
+  for (let m = 1; m <= 12; m++) monthMap.set(m, { khenThuong: 0, kyLuat: 0 });
+  const currentYear = new Date().getFullYear();
+
+  for (const row of result.rows) {
+    const isKhenThuong = row.type === 'khen_thuong';
+
+    if (isKhenThuong) totalByType.khenThuong++;
+    else totalByType.kyLuat++;
+
+    if (!chapterMap.has(row.chapter_name)) chapterMap.set(row.chapter_name, { khenThuong: 0, kyLuat: 0 });
+    const chapterEntry = chapterMap.get(row.chapter_name)!;
+    if (isKhenThuong) chapterEntry.khenThuong++;
+    else chapterEntry.kyLuat++;
+
+    const decisionDate: string = row.decision_date;
+    const year = parseInt(decisionDate.slice(0, 4), 10);
+    if (year === currentYear) {
+      const month = parseInt(decisionDate.slice(5, 7), 10);
+      const monthEntry = monthMap.get(month)!;
+      if (isKhenThuong) monthEntry.khenThuong++;
+      else monthEntry.kyLuat++;
+    }
+  }
+
+  const byChapter = Array.from(chapterMap.entries())
+    .map(([chapterName, counts]) => ({ chapterName, ...counts }))
+    .sort((a, b) => b.khenThuong + b.kyLuat - (a.khenThuong + a.kyLuat));
+
+  const byMonth = Array.from(monthMap.entries())
+    .map(([month, counts]) => ({ month, ...counts }))
+    .sort((a, b) => a.month - b.month);
+
+  return { totalByType, byChapter, byMonth };
+}

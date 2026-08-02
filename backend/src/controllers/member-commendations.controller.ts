@@ -9,6 +9,7 @@ import {
   createCommendation,
   updateCommendation,
   deleteCommendation,
+  getCommendationStats,
 } from '../repositories/member-commendations.repository';
 
 const commendationSchema = z.object({
@@ -32,6 +33,12 @@ export async function getCommendations(req: AuthedRequest, res: Response) {
       search: req.query.search as string | undefined,
     })
   );
+}
+
+export async function getCommendationStatsHandler(req: AuthedRequest, res: Response) {
+  const managedChapterId = req.user!.managedChapterId;
+  const chapterId = req.user!.role !== 'admin' && managedChapterId != null ? managedChapterId : undefined;
+  res.json(await getCommendationStats(chapterId));
 }
 
 export async function postCommendation(req: AuthedRequest, res: Response) {

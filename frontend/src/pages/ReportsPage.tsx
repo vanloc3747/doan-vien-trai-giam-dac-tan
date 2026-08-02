@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Award, ShieldAlert } from 'lucide-react';
 import { fetchReport } from '../api/dashboard';
+import { fetchCommendationStats } from '../api/commendations';
 import type { ReportDimension } from '../types';
+
+const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => `Th ${i + 1}`);
 
 const DIMENSION_OPTIONS: { value: ReportDimension; label: string }[] = [
   { value: 'gender', label: 'Giới tính' },
@@ -16,10 +20,22 @@ const DIMENSION_OPTIONS: { value: ReportDimension; label: string }[] = [
 export function ReportsPage() {
   const [dimension, setDimension] = useState<ReportDimension>('gender');
   const { data } = useQuery({ queryKey: ['report', dimension], queryFn: () => fetchReport(dimension) });
+  const { data: commendationStats } = useQuery({
+    queryKey: ['commendation-stats'],
+    queryFn: fetchCommendationStats,
+  });
 
   const items = data ?? [];
   const total = items.reduce((sum, item) => sum + item.count, 0);
   const currentLabel = DIMENSION_OPTIONS.find((o) => o.value === dimension)?.label ?? '';
+
+  const totalKhenThuong = commendationStats?.totalByType.khenThuong ?? 0;
+  const totalKyLuat = commendationStats?.totalByType.kyLuat ?? 0;
+  const byChapter = commendationStats?.byChapter ?? [];
+  const byMonth = (commendationStats?.byMonth ?? []).map((m) => ({
+    ...m,
+    monthLabel: MONTH_LABELS[m.month - 1],
+  }));
 
   return (
     <div className="space-y-4">
@@ -79,6 +95,66 @@ export function ReportsPage() {
             </tr>
           </tfoot>
         </table>
+      </div>
+
+      <div className="rounded-xl bg-white p-5 shadow-sm">
+        <h3 className="mb-4 font-semibold text-slate-800">Thống kê Khen thưởng - Kỷ luật</h3>
+
+        <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex items-center gap-4 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white">
+              <Award size={22} />
+            </div>
+            <div>
+              <div className="text-sm text-slate-500">Tổng Khen thưởng</div>
+              <div className="text-2xl font-semibold text-slate-800">{totalKhenThuong}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-xl border border-red-100 bg-red-50 p-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white">
+              <ShieldAlert size={22} />
+            </div>
+            <div>
+              <div className="text-sm text-slate-500">Tổng Kỷ luật</div>
+              <div className="text-2xl font-semibold text-slate-800">{totalKyLuat}</div>
+            </div>
+          </div>
+        </div>
+
+        <h4 className="mb-2 text-sm font-medium text-slate-600">Theo chi đoàn</h4>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={byChapter}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <XAxis
+              dataKey="chapterName"
+              tick={{ fontSize: 11 }}
+              interval={0}
+              angle={-20}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="khenThuong" name="Khen thưởng" fill="#10b981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="kyLuat" name="Kỷ luật" fill="#ef4444" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+
+        <h4 className="mb-2 mt-6 text-sm font-medium text-slate-600">
+          Theo tháng trong năm {new Date().getFullYear()}
+        </h4>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={byMonth}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <XAxis dataKey="monthLabel" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="khenThuong" name="Khen thưởng" fill="#10b981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="kyLuat" name="Kỷ luật" fill="#ef4444" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
