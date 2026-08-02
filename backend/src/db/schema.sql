@@ -131,3 +131,22 @@ CREATE TABLE activity_plans (
 );
 
 CREATE INDEX idx_activity_plans_start_date ON activity_plans(start_date);
+
+CREATE TABLE activity_reports (
+  id SERIAL PRIMARY KEY,
+  plan_id INTEGER NOT NULL REFERENCES activity_plans(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE activity_report_images (
+  id SERIAL PRIMARY KEY,
+  report_id INTEGER NOT NULL REFERENCES activity_reports(id) ON DELETE CASCADE,
+  image_path TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_activity_reports_plan ON activity_reports(plan_id);
+CREATE INDEX idx_activity_report_images_report ON activity_report_images(report_id);

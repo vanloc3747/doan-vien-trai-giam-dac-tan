@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 
 export const MEMBER_PHOTOS_BUCKET = 'member-photos';
 export const BRANDING_BUCKET = 'branding';
+export const ACTIVITY_REPORT_IMAGES_BUCKET = 'activity-report-images';
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -37,16 +38,15 @@ export function deleteMemberPhoto(objectPath: string) {
   return deleteObject(MEMBER_PHOTOS_BUCKET, objectPath);
 }
 
-export async function getMemberPhotoSignedUrls(
+async function getSignedUrls(
+  bucket: string,
   paths: (string | null | undefined)[],
   expiresIn = 3600
 ): Promise<(string | null)[]> {
   const uniquePaths = [...new Set(paths.filter((p): p is string => !!p))];
   if (uniquePaths.length === 0) return paths.map(() => null);
 
-  const { data, error } = await supabase.storage
-    .from(MEMBER_PHOTOS_BUCKET)
-    .createSignedUrls(uniquePaths, expiresIn);
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrls(uniquePaths, expiresIn);
   if (error) throw error;
 
   const urlByPath = new Map<string, string | null>();
@@ -57,9 +57,25 @@ export async function getMemberPhotoSignedUrls(
   return paths.map((p) => (p ? urlByPath.get(p) ?? null : null));
 }
 
+export function getMemberPhotoSignedUrls(paths: (string | null | undefined)[], expiresIn = 3600) {
+  return getSignedUrls(MEMBER_PHOTOS_BUCKET, paths, expiresIn);
+}
+
 export async function getMemberPhotoSignedUrl(path: string | null | undefined): Promise<string | null> {
   const [url] = await getMemberPhotoSignedUrls([path]);
   return url;
+}
+
+export function uploadActivityReportImage(buffer: Buffer, mimetype: string) {
+  return uploadObject(ACTIVITY_REPORT_IMAGES_BUCKET, 'activity-report', buffer, mimetype);
+}
+
+export function deleteActivityReportImage(objectPath: string) {
+  return deleteObject(ACTIVITY_REPORT_IMAGES_BUCKET, objectPath);
+}
+
+export function getActivityReportImageSignedUrls(paths: (string | null | undefined)[], expiresIn = 3600) {
+  return getSignedUrls(ACTIVITY_REPORT_IMAGES_BUCKET, paths, expiresIn);
 }
 
 export function uploadBrandingLogo(buffer: Buffer, mimetype: string) {

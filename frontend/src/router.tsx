@@ -12,6 +12,7 @@ import { DepartmentsPage } from './pages/DepartmentsPage';
 import { RoleTitlesPage } from './pages/RoleTitlesPage';
 import { AccountsPage } from './pages/AccountsPage';
 import { ActivityPlansPage } from './pages/ActivityPlansPage';
+import { ActivityReportsPage } from './pages/ActivityReportsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { CalendarPage } from './pages/CalendarPage';
@@ -39,6 +40,7 @@ export const router = createBrowserRouter(
         { path: 'to-chuc/chuc-vu', element: <RoleTitlesPage /> },
         { path: 'to-chuc/tai-khoan', element: <AccountsPage /> },
         { path: 'to-chuc/ke-hoach-hoat-dong', element: <ActivityPlansPage /> },
+        { path: 'to-chuc/bao-cao-ket-qua', element: <ActivityReportsPage /> },
         { path: 'tien-ich/bao-cao', element: <ReportsPage /> },
         { path: 'tien-ich/thong-bao', element: <NotificationsPage /> },
         { path: 'tien-ich/lich-cong-tac', element: <CalendarPage /> },

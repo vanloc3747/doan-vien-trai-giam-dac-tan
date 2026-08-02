@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { MEMBER_PHOTOS_BUCKET, BRANDING_BUCKET } from '../lib/storage';
+import { MEMBER_PHOTOS_BUCKET, BRANDING_BUCKET, ACTIVITY_REPORT_IMAGES_BUCKET } from '../lib/storage';
 
 async function ensureBucket(name: string, isPublic: boolean) {
   const { data: buckets, error: listError } = await supabase.storage.listBuckets();
@@ -18,6 +18,7 @@ async function ensureBucket(name: string, isPublic: boolean) {
 async function main() {
   await ensureBucket(MEMBER_PHOTOS_BUCKET, false);
   await ensureBucket(BRANDING_BUCKET, true);
+  await ensureBucket(ACTIVITY_REPORT_IMAGES_BUCKET, false);
   console.log('Hoàn tất thiết lập Supabase Storage.');
 }
 

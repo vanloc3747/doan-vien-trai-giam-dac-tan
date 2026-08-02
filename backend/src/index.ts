@@ -13,6 +13,7 @@ import { appSettingsRouter } from './routes/app-settings.routes';
 import { commendationsRouter } from './routes/member-commendations.routes';
 import { calendarNotesRouter } from './routes/calendar-notes.routes';
 import { activityPlansRouter } from './routes/activity-plans.routes';
+import { activityReportsRouter } from './routes/activity-reports.routes';
 import { requireAuth } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -35,6 +36,7 @@ app.use('/api/app-settings', requireAuth, appSettingsRouter);
 app.use('/api/commendations', requireAuth, commendationsRouter);
 app.use('/api/calendar-notes', requireAuth, calendarNotesRouter);
 app.use('/api/activity-plans', requireAuth, activityPlansRouter);
+app.use('/api/activity-reports', requireAuth, activityReportsRouter);
 
 app.use(errorHandler);
 

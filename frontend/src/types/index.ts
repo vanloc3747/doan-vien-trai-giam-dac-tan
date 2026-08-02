@@ -154,3 +154,16 @@ export interface ActivityPlan {
   chapterName?: string;
   status: ActivityPlanStatus;
 }
+
+export interface ActivityReportImage {
+  id: number;
+  url: string;
+}
+
+export interface ActivityReport {
+  id: number;
+  planId: number;
+  planTitle: string;
+  content: string;
+  images: ActivityReportImage[];
+}

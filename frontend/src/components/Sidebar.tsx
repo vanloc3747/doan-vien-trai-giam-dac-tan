@@ -13,6 +13,7 @@ import {
   Users2,
   UserCog,
   ClipboardList,
+  Image,
   BarChart3,
   Bell,
   Calendar,
@@ -61,7 +62,10 @@ export function Sidebar({ open }: { open: boolean }) {
           },
           {
             title: 'CÔNG TÁC ĐOÀN',
-            items: [{ label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList }],
+            items: [
+              { label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList },
+              { label: 'Báo cáo kết quả hoạt động', path: '/to-chuc/bao-cao-ket-qua', icon: Image },
+            ],
           },
         ]
       : []),
