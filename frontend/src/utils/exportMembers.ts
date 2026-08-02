@@ -34,7 +34,36 @@ const HEADERS = [
   'Ghi chú',
 ];
 
-export function exportMembersToExcel(members: Member[]) {
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: { description: string; accept: Record<string, string[]> }[];
+}
+
+interface FileSystemWritableStream {
+  write(data: Blob): Promise<void>;
+  close(): Promise<void>;
+}
+
+interface FileSystemFileHandleLike {
+  createWritable(): Promise<FileSystemWritableStream>;
+}
+
+type WindowWithSavePicker = Window & {
+  showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandleLike>;
+};
+
+function downloadViaAnchor(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export async function exportMembersToExcel(members: Member[]) {
   const rows = members.map((m, idx) => [
     String(idx + 1),
     m.fullName,
@@ -56,13 +85,29 @@ export function exportMembersToExcel(members: Member[]) {
   const csvContent = '﻿' + lines.join('\r\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
   const date = new Date().toISOString().slice(0, 10);
-  link.href = url;
-  link.download = `danh-sach-doan-vien-${date}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const fileName = `danh-sach-doan-vien-${date}.csv`;
+
+  // showSaveFilePicker (Chrome/Edge) mở hộp thoại "Lưu tại" cho người dùng chọn nơi lưu.
+  // Trình duyệt không hỗ trợ (Firefox/Safari) sẽ rơi về tải file mặc định qua thẻ <a>.
+  const win = window as WindowWithSavePicker;
+  if (win.showSaveFilePicker) {
+    try {
+      const handle = await win.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return; // Người dùng bấm Hủy trong hộp thoại lưu file
+      }
+      // Lỗi khác (vd trình duyệt chặn do mất user activation) -> rơi về tải mặc định
+    }
+  }
+
+  downloadViaAnchor(blob, fileName);
 }

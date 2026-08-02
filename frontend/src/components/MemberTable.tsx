@@ -137,7 +137,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
         page: 1,
         pageSize: 10000,
       });
-      exportMembersToExcel(result.data);
+      await exportMembersToExcel(result.data);
     } finally {
       setExporting(false);
     }
