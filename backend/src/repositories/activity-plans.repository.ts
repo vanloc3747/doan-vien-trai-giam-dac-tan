@@ -9,28 +9,34 @@ function mapRow(row: any) {
     content: row.content,
     chapterId: row.chapter_id,
     chapterName: row.chapter_name,
-    status: row.status,
+    status: row.computed_status,
   };
 }
 
+// Trạng thái hiển thị được suy ra tự động: đã có ai báo cáo kết quả -> Đã hoàn thành;
+// chưa ai báo cáo và đã quá ngày kết thúc -> Chưa thực hiện; còn lại giữ giá trị admin
+// đã chọn thủ công (vd Đang thực hiện trong lúc chờ báo cáo).
+const SELECT_BASE = `
+  SELECT ap.*, c.name AS chapter_name,
+         CASE
+           WHEN COUNT(ar.id) > 0 THEN 'da_hoan_thanh'
+           WHEN ap.end_date < CURRENT_DATE THEN 'chua_thuc_hien'
+           ELSE ap.status
+         END AS computed_status
+  FROM activity_plans ap
+  LEFT JOIN chapters c ON c.id = ap.chapter_id
+  LEFT JOIN activity_reports ar ON ar.plan_id = ap.id
+`;
+
 export async function listActivityPlans() {
   const result = await pool.query(
-    `SELECT ap.*, c.name AS chapter_name
-     FROM activity_plans ap
-     LEFT JOIN chapters c ON c.id = ap.chapter_id
-     ORDER BY ap.start_date DESC, ap.id DESC`
+    `${SELECT_BASE} GROUP BY ap.id, c.name ORDER BY ap.start_date DESC, ap.id DESC`
   );
   return result.rows.map(mapRow);
 }
 
 export async function getActivityPlanById(id: number) {
-  const result = await pool.query(
-    `SELECT ap.*, c.name AS chapter_name
-     FROM activity_plans ap
-     LEFT JOIN chapters c ON c.id = ap.chapter_id
-     WHERE ap.id = $1`,
-    [id]
-  );
+  const result = await pool.query(`${SELECT_BASE} WHERE ap.id = $1 GROUP BY ap.id, c.name`, [id]);
   return result.rows[0] ? mapRow(result.rows[0]) : null;
 }
 
