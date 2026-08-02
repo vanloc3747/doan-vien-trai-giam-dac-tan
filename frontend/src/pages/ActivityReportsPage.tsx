@@ -98,7 +98,7 @@ export function ActivityReportsPage() {
               <div>
                 <h4 className="font-medium text-slate-700">{report.planTitle}</h4>
                 <div className="text-xs text-slate-400">
-                  Người báo cáo: {report.reportedByName ?? 'Không rõ'}
+                  Chi đoàn: {report.reportedByManagedChapterName ?? 'Toàn Đoàn'}
                 </div>
               </div>
               {canManageReport(report) && (

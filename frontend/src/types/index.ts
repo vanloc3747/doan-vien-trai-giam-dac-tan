@@ -166,6 +166,7 @@ export interface ActivityReport {
   planTitle: string;
   content: string;
   reportedById: number | null;
-  reportedByName: string | null;
+  reportedByManagedChapterId: number | null;
+  reportedByManagedChapterName: string | null;
   images: ActivityReportImage[];
 }

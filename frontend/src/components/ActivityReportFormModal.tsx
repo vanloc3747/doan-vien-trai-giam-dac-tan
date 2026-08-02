@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { ActivityReport, ActivityReportImage } from '../types';
 import { fetchActivityPlans } from '../api/activity-plans';
+import { useAuth } from '../context/AuthContext';
 
 interface ActivityReportFormModalProps {
   open: boolean;
@@ -21,7 +22,15 @@ export function ActivityReportFormModal({
   onDeleteImage,
   submitting,
 }: ActivityReportFormModalProps) {
+  const { user } = useAuth();
   const { data: plans } = useQuery({ queryKey: ['activity-plans'], queryFn: fetchActivityPlans });
+  const selectablePlans = (plans ?? []).filter(
+    (p) =>
+      user?.role === 'admin' ||
+      p.chapterId == null ||
+      p.chapterId === user?.managedChapterId ||
+      p.id === report?.planId
+  );
   const [planId, setPlanId] = useState('');
   const [content, setContent] = useState('');
   const [existingImages, setExistingImages] = useState<ActivityReportImage[]>([]);
@@ -76,7 +85,7 @@ export function ActivityReportFormModal({
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
             >
               <option value="">-- Chọn kế hoạch hoạt động --</option>
-              {(plans ?? []).map((p) => (
+              {selectablePlans.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.title}
                 </option>

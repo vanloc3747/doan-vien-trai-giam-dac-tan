@@ -19,6 +19,15 @@ import {
 
 type ReportWithImages = { images: { id: number; imagePath: string }[] } & Record<string, unknown>;
 
+function assertCanReportPlan(req: AuthedRequest, planChapterId: number | null): string | null {
+  if (req.user!.role === 'admin') return null;
+  if (planChapterId == null) return null;
+  if (req.user!.managedChapterId !== planChapterId) {
+    return 'Bạn không phụ trách chi đoàn của kế hoạch này nên không thể báo cáo kết quả';
+  }
+  return null;
+}
+
 async function attachImageUrls<T extends ReportWithImages>(report: T) {
   const urls = await getActivityReportImageSignedUrls(report.images.map((img) => img.imagePath));
   return { ...report, images: report.images.map((img, i) => ({ id: img.id, url: urls[i] })) };
@@ -42,6 +51,8 @@ export async function postActivityReport(req: AuthedRequest, res: Response) {
 
   const plan = await getActivityPlanById(planId);
   if (!plan) return res.status(404).json({ error: 'Không tìm thấy kế hoạch hoạt động' });
+  const scopeError = assertCanReportPlan(req, plan.chapterId);
+  if (scopeError) return res.status(403).json({ error: scopeError });
 
   const reportId = await createActivityReport(planId, content, req.user!.id);
 
@@ -70,6 +81,8 @@ export async function putActivityReport(req: AuthedRequest, res: Response) {
 
   const plan = await getActivityPlanById(planId);
   if (!plan) return res.status(404).json({ error: 'Không tìm thấy kế hoạch hoạt động' });
+  const scopeError = assertCanReportPlan(req, plan.chapterId);
+  if (scopeError) return res.status(403).json({ error: scopeError });
 
   await updateActivityReport(id, planId, content);
 
