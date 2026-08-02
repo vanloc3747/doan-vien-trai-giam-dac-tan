@@ -5,6 +5,10 @@ export function fetchCalendarNotes(year: number, month: number) {
   return apiFetch<CalendarNote[]>(`/calendar-notes?year=${year}&month=${month}`);
 }
 
+export function fetchTodayCalendarNotes() {
+  return apiFetch<CalendarNote[]>('/calendar-notes/today');
+}
+
 export function createCalendarNote(noteDate: string, content: string) {
   return apiFetch<CalendarNote>('/calendar-notes', {
     method: 'POST',

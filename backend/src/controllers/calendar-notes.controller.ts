@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { AuthedRequest } from '../middleware/auth';
 import {
   listCalendarNotes,
+  listTodayCalendarNotes,
   getCalendarNoteById,
   createCalendarNote,
   updateCalendarNote,
@@ -22,6 +23,10 @@ export async function getCalendarNotes(req: AuthedRequest, res: Response) {
     return res.status(400).json({ error: 'year/month không hợp lệ' });
   }
   res.json(await listCalendarNotes(year, month));
+}
+
+export async function getTodayCalendarNotes(req: AuthedRequest, res: Response) {
+  res.json(await listTodayCalendarNotes());
 }
 
 export async function postCalendarNote(req: AuthedRequest, res: Response) {

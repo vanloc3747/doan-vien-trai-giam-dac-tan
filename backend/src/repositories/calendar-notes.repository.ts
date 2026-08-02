@@ -18,6 +18,13 @@ export async function listCalendarNotes(year: number, month: number) {
   return result.rows.map(mapRow);
 }
 
+export async function listTodayCalendarNotes() {
+  const result = await pool.query(
+    `SELECT * FROM calendar_notes WHERE note_date = CURRENT_DATE ORDER BY id ASC`
+  );
+  return result.rows.map(mapRow);
+}
+
 export async function getCalendarNoteById(id: number) {
   const result = await pool.query('SELECT * FROM calendar_notes WHERE id = $1', [id]);
   return result.rows[0] ? mapRow(result.rows[0]) : null;

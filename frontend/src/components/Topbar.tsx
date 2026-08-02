@@ -5,6 +5,7 @@ import { Menu, Search, Bell, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { logout, fetchPendingAccounts } from '../api/auth';
 import { fetchPendingApprovalMembers } from '../api/members';
+import { fetchTodayCalendarNotes } from '../api/calendar-notes';
 
 interface TopbarProps {
   title: string;
@@ -32,9 +33,15 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
     queryFn: fetchPendingAccounts,
     enabled: isAdmin,
   });
+  const { data: todayNotes } = useQuery({
+    queryKey: ['calendar-notes-today'],
+    queryFn: fetchTodayCalendarNotes,
+  });
   const pendingMembersCount = pendingMembers?.length ?? 0;
   const pendingAccountsCount = pendingAccounts?.length ?? 0;
+  const todayNotesCount = todayNotes?.length ?? 0;
   const totalPending = pendingMembersCount + pendingAccountsCount;
+  const totalNotifications = totalPending + todayNotesCount;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -92,9 +99,9 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
             aria-label="Thông báo"
           >
             <Bell size={20} />
-            {isAdmin && totalPending > 0 && (
+            {totalNotifications > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
-                {totalPending > 9 ? '9+' : totalPending}
+                {totalNotifications > 9 ? '9+' : totalNotifications}
               </span>
             )}
           </button>
@@ -102,9 +109,9 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
           {notifOpen && (
             <div className="absolute right-0 top-full z-20 mt-2 w-72 rounded-xl border border-slate-100 bg-white p-4 shadow-lg">
               <h4 className="mb-3 text-sm font-semibold text-slate-800">Thông báo</h4>
-              {isAdmin && totalPending > 0 ? (
+              {totalNotifications > 0 ? (
                 <div className="space-y-2">
-                  {pendingMembersCount > 0 && (
+                  {isAdmin && pendingMembersCount > 0 && (
                     <Link
                       to="/doan-vien/xet-duyet"
                       onClick={() => setNotifOpen(false)}
@@ -113,7 +120,7 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
                       <span className="font-medium text-slate-800">{pendingMembersCount}</span> đoàn viên chờ duyệt
                     </Link>
                   )}
-                  {pendingAccountsCount > 0 && (
+                  {isAdmin && pendingAccountsCount > 0 && (
                     <Link
                       to="/doan-vien/xet-duyet"
                       onClick={() => setNotifOpen(false)}
@@ -122,6 +129,16 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
                       <span className="font-medium text-slate-800">{pendingAccountsCount}</span> tài khoản chờ duyệt
                     </Link>
                   )}
+                  {(todayNotes ?? []).map((note) => (
+                    <Link
+                      key={note.id}
+                      to="/tien-ich/lich-cong-tac"
+                      onClick={() => setNotifOpen(false)}
+                      className="block rounded-lg border border-slate-100 p-2.5 text-sm text-slate-600 hover:bg-slate-50"
+                    >
+                      <span className="font-medium text-slate-800">Lịch công tác hôm nay:</span> {note.content}
+                    </Link>
+                  ))}
                 </div>
               ) : (
                 <div className="text-sm text-slate-400">Không có thông báo mới</div>
