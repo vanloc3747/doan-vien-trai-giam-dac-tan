@@ -129,3 +129,9 @@ export interface Commendation {
   content: string;
   issuedBy: string | null;
 }
+
+export interface CalendarNote {
+  id: number;
+  noteDate: string;
+  content: string;
+}

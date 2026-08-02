@@ -105,3 +105,14 @@ CREATE TABLE app_settings (
 );
 
 INSERT INTO app_settings (id) VALUES (1);
+
+CREATE TABLE calendar_notes (
+  id SERIAL PRIMARY KEY,
+  note_date DATE NOT NULL,
+  content TEXT NOT NULL,
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_calendar_notes_date ON calendar_notes(note_date);
