@@ -10,8 +10,19 @@ export interface CommendationFormInput {
   issuedBy: string | null;
 }
 
-export function fetchCommendations() {
-  return apiFetch<Commendation[]>('/commendations');
+export interface CommendationQuery {
+  search?: string;
+  chapterId?: number;
+  type?: CommendationType;
+}
+
+export function fetchCommendations(query: CommendationQuery = {}) {
+  const params = new URLSearchParams();
+  if (query.search) params.set('search', query.search);
+  if (query.chapterId) params.set('chapterId', String(query.chapterId));
+  if (query.type) params.set('type', query.type);
+  const qs = params.toString();
+  return apiFetch<Commendation[]>(`/commendations${qs ? `?${qs}` : ''}`);
 }
 
 export function createCommendation(input: CommendationFormInput) {

@@ -3,6 +3,8 @@ import { pool } from '../db/pool';
 export interface CommendationFilters {
   chapterId?: number;
   memberId?: number;
+  type?: 'khen_thuong' | 'ky_luat';
+  search?: string;
 }
 
 function mapRow(row: any) {
@@ -11,6 +13,7 @@ function mapRow(row: any) {
     memberId: row.member_id,
     memberName: row.member_name,
     chapterId: row.chapter_id,
+    chapterName: row.chapter_name,
     type: row.type,
     decisionDate: row.decision_date,
     decisionNumber: row.decision_number,
@@ -31,13 +34,24 @@ export async function listCommendations(filters: CommendationFilters) {
     params.push(filters.memberId);
     conditions.push(`mc.member_id = $${params.length}`);
   }
+  if (filters.type) {
+    params.push(filters.type);
+    conditions.push(`mc.type = $${params.length}`);
+  }
+  if (filters.search) {
+    params.push(`%${filters.search}%`);
+    conditions.push(
+      `(m.full_name ILIKE $${params.length} OR mc.content ILIKE $${params.length} OR mc.decision_number ILIKE $${params.length})`
+    );
+  }
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const result = await pool.query(
-    `SELECT mc.*, m.full_name AS member_name, m.chapter_id
+    `SELECT mc.*, m.full_name AS member_name, m.chapter_id, c.name AS chapter_name
      FROM member_commendations mc
      JOIN members m ON m.id = mc.member_id
+     LEFT JOIN chapters c ON c.id = m.chapter_id
      ${whereClause}
      ORDER BY mc.decision_date DESC`,
     params
@@ -47,9 +61,10 @@ export async function listCommendations(filters: CommendationFilters) {
 
 export async function getCommendationById(id: number) {
   const result = await pool.query(
-    `SELECT mc.*, m.full_name AS member_name, m.chapter_id
+    `SELECT mc.*, m.full_name AS member_name, m.chapter_id, c.name AS chapter_name
      FROM member_commendations mc
      JOIN members m ON m.id = mc.member_id
+     LEFT JOIN chapters c ON c.id = m.chapter_id
      WHERE mc.id = $1`,
     [id]
   );

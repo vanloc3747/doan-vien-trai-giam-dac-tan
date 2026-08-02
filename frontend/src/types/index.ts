@@ -122,6 +122,7 @@ export interface Commendation {
   id: number;
   memberId: number;
   memberName: string;
+  chapterName?: string;
   type: CommendationType;
   decisionDate: string;
   decisionNumber: string | null;

@@ -21,9 +21,17 @@ const commendationSchema = z.object({
 });
 
 export async function getCommendations(req: AuthedRequest, res: Response) {
+  const requestedChapterId = req.query.chapterId ? parseInt(req.query.chapterId as string, 10) : undefined;
   const managedChapterId = req.user!.managedChapterId;
-  const chapterId = req.user!.role !== 'admin' && managedChapterId != null ? managedChapterId : undefined;
-  res.json(await listCommendations({ chapterId }));
+  const chapterId =
+    req.user!.role !== 'admin' && managedChapterId != null ? managedChapterId : requestedChapterId;
+  res.json(
+    await listCommendations({
+      chapterId,
+      type: req.query.type as 'khen_thuong' | 'ky_luat' | undefined,
+      search: req.query.search as string | undefined,
+    })
+  );
 }
 
 export async function postCommendation(req: AuthedRequest, res: Response) {

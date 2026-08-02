@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import {
   fetchCommendations,
   createCommendation,
@@ -8,7 +8,8 @@ import {
   deleteCommendation,
   type CommendationFormInput,
 } from '../api/commendations';
-import type { Commendation } from '../types';
+import { fetchChapters } from '../api/chapters';
+import type { Commendation, CommendationType } from '../types';
 import { CommendationFormModal } from '../components/CommendationFormModal';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,7 +21,20 @@ export function CommendationsPage() {
   const { user } = useAuth();
   const canManage = user?.role === 'admin' || user?.managedChapterId != null;
 
-  const { data } = useQuery({ queryKey: ['commendations'], queryFn: fetchCommendations });
+  const [search, setSearch] = useState('');
+  const [chapterId, setChapterId] = useState('');
+  const [type, setType] = useState('');
+
+  const { data } = useQuery({
+    queryKey: ['commendations', { search, chapterId, type }],
+    queryFn: () =>
+      fetchCommendations({
+        search: search || undefined,
+        chapterId: chapterId ? parseInt(chapterId, 10) : undefined,
+        type: (type || undefined) as CommendationType | undefined,
+      }),
+  });
+  const { data: chapters } = useQuery({ queryKey: ['chapters'], queryFn: fetchChapters });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCommendation, setEditingCommendation] = useState<Commendation | null>(null);
   const queryClient = useQueryClient();
@@ -80,11 +94,45 @@ export function CommendationsPage() {
         )}
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[220px] flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm kiếm theo tên đoàn viên, nội dung, số QĐ..."
+            className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-400"
+          />
+        </div>
+        <select
+          value={chapterId}
+          onChange={(e) => setChapterId(e.target.value)}
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600"
+        >
+          <option value="">-- Chi đoàn --</option>
+          {(chapters ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600"
+        >
+          <option value="">-- Loại --</option>
+          <option value="khen_thuong">Khen thưởng</option>
+          <option value="ky_luat">Kỷ luật</option>
+        </select>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-slate-100 text-slate-400">
               <th className="py-2 pr-3 font-medium">Đoàn viên</th>
+              <th className="py-2 pr-3 font-medium">Chi đoàn</th>
               <th className="py-2 pr-3 font-medium">Loại</th>
               <th className="py-2 pr-3 font-medium">Ngày QĐ</th>
               <th className="py-2 pr-3 font-medium">Số QĐ</th>
@@ -97,6 +145,7 @@ export function CommendationsPage() {
             {(data ?? []).map((c) => (
               <tr key={c.id} className="border-b border-slate-50">
                 <td className="py-3 pr-3 font-medium text-slate-700">{c.memberName}</td>
+                <td className="py-3 pr-3 text-slate-500">{c.chapterName ?? '-'}</td>
                 <td className="py-3 pr-3">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -135,7 +184,7 @@ export function CommendationsPage() {
             ))}
             {(data ?? []).length === 0 && (
               <tr>
-                <td colSpan={7} className="py-6 text-center text-slate-400">
+                <td colSpan={8} className="py-6 text-center text-slate-400">
                   Chưa có bản ghi khen thưởng/kỷ luật nào.
                 </td>
               </tr>
