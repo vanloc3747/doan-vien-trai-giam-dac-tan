@@ -6,6 +6,7 @@ CREATE TYPE user_role_enum AS ENUM ('admin', 'can_bo_doan');
 CREATE TYPE account_status_enum AS ENUM ('pending', 'active', 'rejected');
 CREATE TYPE member_approval_status_enum AS ENUM ('approved', 'pending');
 CREATE TYPE commendation_type_enum AS ENUM ('khen_thuong', 'ky_luat');
+CREATE TYPE activity_plan_status_enum AS ENUM ('chua_thuc_hien', 'dang_thuc_hien', 'da_hoan_thanh');
 
 CREATE TABLE chapters (
   id SERIAL PRIMARY KEY,
@@ -116,3 +117,17 @@ CREATE TABLE calendar_notes (
 );
 
 CREATE INDEX idx_calendar_notes_date ON calendar_notes(note_date);
+
+CREATE TABLE activity_plans (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  content TEXT,
+  chapter_id INTEGER REFERENCES chapters(id) ON DELETE SET NULL,
+  status activity_plan_status_enum NOT NULL DEFAULT 'chua_thuc_hien',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_activity_plans_start_date ON activity_plans(start_date);

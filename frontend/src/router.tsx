@@ -11,7 +11,7 @@ import { ChaptersPage } from './pages/ChaptersPage';
 import { DepartmentsPage } from './pages/DepartmentsPage';
 import { RoleTitlesPage } from './pages/RoleTitlesPage';
 import { AccountsPage } from './pages/AccountsPage';
-import { TaskAssignmentPage } from './pages/TaskAssignmentPage';
+import { ActivityPlansPage } from './pages/ActivityPlansPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { CalendarPage } from './pages/CalendarPage';
@@ -38,7 +38,7 @@ export const router = createBrowserRouter(
         { path: 'to-chuc/bo-phan-cong-tac', element: <DepartmentsPage /> },
         { path: 'to-chuc/chuc-vu', element: <RoleTitlesPage /> },
         { path: 'to-chuc/tai-khoan', element: <AccountsPage /> },
-        { path: 'to-chuc/phan-cong', element: <TaskAssignmentPage /> },
+        { path: 'to-chuc/ke-hoach-hoat-dong', element: <ActivityPlansPage /> },
         { path: 'tien-ich/bao-cao', element: <ReportsPage /> },
         { path: 'tien-ich/thong-bao', element: <NotificationsPage /> },
         { path: 'tien-ich/lich-cong-tac', element: <CalendarPage /> },

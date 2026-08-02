@@ -141,3 +141,16 @@ export interface CommendationStats {
   byChapter: { chapterName: string; khenThuong: number; kyLuat: number }[];
   byMonth: { month: number; khenThuong: number; kyLuat: number }[];
 }
+
+export type ActivityPlanStatus = 'chua_thuc_hien' | 'dang_thuc_hien' | 'da_hoan_thanh';
+
+export interface ActivityPlan {
+  id: number;
+  title: string;
+  startDate: string;
+  endDate: string;
+  content: string | null;
+  chapterId: number | null;
+  chapterName?: string;
+  status: ActivityPlanStatus;
+}

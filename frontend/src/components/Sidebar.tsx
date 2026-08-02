@@ -56,7 +56,7 @@ export function Sidebar({ open }: { open: boolean }) {
               { label: 'Chi đoàn', path: '/to-chuc/chi-doan', icon: Building2 },
               { label: 'Bộ phận công tác', path: '/to-chuc/bo-phan-cong-tac', icon: Briefcase },
               { label: 'Quản lý chức vụ đoàn', path: '/to-chuc/chuc-vu', icon: Users2 },
-              { label: 'Phân công nhiệm vụ', path: '/to-chuc/phan-cong', icon: ClipboardList },
+              { label: 'Kế hoạch hoạt động', path: '/to-chuc/ke-hoach-hoat-dong', icon: ClipboardList },
               { label: 'Quản lý tài khoản', path: '/to-chuc/tai-khoan', icon: UserCog },
             ],
           },
