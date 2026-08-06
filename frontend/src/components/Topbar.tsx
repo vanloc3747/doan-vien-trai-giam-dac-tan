@@ -70,18 +70,22 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-      <div className="flex items-center gap-4">
-        <button onClick={onToggleSidebar} className="text-slate-500 hover:text-slate-700" aria-label="Menu">
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-3 sm:px-6 sm:py-4">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+        <button
+          onClick={onToggleSidebar}
+          className="shrink-0 text-slate-500 hover:text-slate-700"
+          aria-label="Menu"
+        >
           <Menu size={22} />
         </button>
-        <div>
-          <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
-          <p className="text-xs text-slate-400">{breadcrumb.join(' > ')}</p>
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-semibold text-slate-800 sm:text-lg">{title}</h1>
+          <p className="hidden truncate text-xs text-slate-400 sm:block">{breadcrumb.join(' > ')}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex shrink-0 items-center gap-3 sm:gap-5">
         <form onSubmit={handleSearch} className="relative hidden md:block">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -107,7 +111,7 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full z-20 mt-2 w-72 rounded-xl border border-slate-100 bg-white p-4 shadow-lg">
+            <div className="absolute right-0 top-full z-20 mt-2 w-[calc(100vw-1.5rem)] rounded-xl border border-slate-100 bg-white p-4 shadow-lg sm:w-72">
               <h4 className="mb-3 text-sm font-semibold text-slate-800">Thông báo</h4>
               {totalNotifications > 0 ? (
                 <div className="space-y-2">
@@ -165,7 +169,7 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-full z-20 mt-2 w-64 rounded-xl border border-slate-100 bg-white p-4 shadow-lg">
+              <div className="absolute right-0 top-full z-20 mt-2 w-[calc(100vw-1.5rem)] rounded-xl border border-slate-100 bg-white p-4 shadow-lg sm:w-64">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-100 text-base font-semibold text-blue-700">
                     {(user?.fullName ?? '?').charAt(0)}

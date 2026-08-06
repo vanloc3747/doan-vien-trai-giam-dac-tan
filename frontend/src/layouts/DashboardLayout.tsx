@@ -30,18 +30,20 @@ const pageMeta: Record<string, { title: string; breadcrumb: string[] }> = {
 export function DashboardLayout() {
   const location = useLocation();
   const meta = pageMeta[location.pathname] ?? { title: 'Trang quản lý', breadcrumb: ['Trang chủ'] };
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window === 'undefined' || window.innerWidth >= 768
+  );
 
   return (
     <div className="flex h-screen bg-slate-100">
-      <Sidebar open={sidebarOpen} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar
           title={meta.title}
           breadcrumb={meta.breadcrumb}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
         />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>

@@ -69,42 +69,44 @@ export function RoleTitlesPage() {
         )}
       </div>
 
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 text-slate-400">
-            <th className="py-2 pr-3 font-medium">Tên chức vụ</th>
-            <th className="py-2 pr-3 font-medium">Số đoàn viên</th>
-            <th className="py-2 pr-3 font-medium">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data ?? []).map((roleTitle) => (
-            <tr key={roleTitle.id} className="border-b border-slate-50">
-              <td className="py-3 pr-3 font-medium text-slate-700">{roleTitle.name}</td>
-              <td className="py-3 pr-3 text-slate-500">{roleTitle.memberCount}</td>
-              <td className="py-3 pr-3">
-                {canManage && (
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <button
-                      className="hover:text-blue-600"
-                      title="Sửa"
-                      onClick={() => {
-                        setEditingRoleTitle(roleTitle);
-                        setModalOpen(true);
-                      }}
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(roleTitle)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-slate-400">
+              <th className="py-2 pr-3 font-medium">Tên chức vụ</th>
+              <th className="py-2 pr-3 font-medium">Số đoàn viên</th>
+              <th className="py-2 pr-3 font-medium">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {(data ?? []).map((roleTitle) => (
+              <tr key={roleTitle.id} className="border-b border-slate-50">
+                <td className="py-3 pr-3 font-medium text-slate-700">{roleTitle.name}</td>
+                <td className="py-3 pr-3 text-slate-500">{roleTitle.memberCount}</td>
+                <td className="py-3 pr-3">
+                  {canManage && (
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <button
+                        className="hover:text-blue-600"
+                        title="Sửa"
+                        onClick={() => {
+                          setEditingRoleTitle(roleTitle);
+                          setModalOpen(true);
+                        }}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(roleTitle)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <RoleTitleFormModal
         open={modalOpen}

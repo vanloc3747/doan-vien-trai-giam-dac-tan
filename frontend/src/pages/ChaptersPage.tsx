@@ -69,42 +69,44 @@ export function ChaptersPage() {
         )}
       </div>
 
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 text-slate-400">
-            <th className="py-2 pr-3 font-medium">Tên chi đoàn</th>
-            <th className="py-2 pr-3 font-medium">Số đoàn viên</th>
-            <th className="py-2 pr-3 font-medium">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data ?? []).map((chapter) => (
-            <tr key={chapter.id} className="border-b border-slate-50">
-              <td className="py-3 pr-3 font-medium text-slate-700">{chapter.name}</td>
-              <td className="py-3 pr-3 text-slate-500">{chapter.memberCount}</td>
-              <td className="py-3 pr-3">
-                {canManage && (
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <button
-                      className="hover:text-blue-600"
-                      title="Sửa"
-                      onClick={() => {
-                        setEditingChapter(chapter);
-                        setModalOpen(true);
-                      }}
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(chapter)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                )}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-slate-400">
+              <th className="py-2 pr-3 font-medium">Tên chi đoàn</th>
+              <th className="py-2 pr-3 font-medium">Số đoàn viên</th>
+              <th className="py-2 pr-3 font-medium">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {(data ?? []).map((chapter) => (
+              <tr key={chapter.id} className="border-b border-slate-50">
+                <td className="py-3 pr-3 font-medium text-slate-700">{chapter.name}</td>
+                <td className="py-3 pr-3 text-slate-500">{chapter.memberCount}</td>
+                <td className="py-3 pr-3">
+                  {canManage && (
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <button
+                        className="hover:text-blue-600"
+                        title="Sửa"
+                        onClick={() => {
+                          setEditingChapter(chapter);
+                          setModalOpen(true);
+                        }}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button className="hover:text-red-500" title="Xóa" onClick={() => handleDelete(chapter)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <ChapterFormModal
         open={modalOpen}

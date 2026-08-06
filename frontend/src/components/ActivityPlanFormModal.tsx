@@ -70,7 +70,7 @@ export function ActivityPlanFormModal({ open, plan, onClose, onSubmit, submittin
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-600">Ngày bắt đầu</label>
               <input

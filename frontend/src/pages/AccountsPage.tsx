@@ -109,60 +109,62 @@ export function AccountsPage() {
         </button>
       </div>
 
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 text-slate-400">
-            <th className="py-2 pr-3 font-medium">Tên đăng nhập</th>
-            <th className="py-2 pr-3 font-medium">Họ và tên</th>
-            <th className="py-2 pr-3 font-medium">Vai trò</th>
-            <th className="py-2 pr-3 font-medium">Trạng thái</th>
-            <th className="py-2 pr-3 font-medium">Chi đoàn quản lý</th>
-            <th className="py-2 pr-3 font-medium">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(accounts ?? []).map((account) => (
-            <tr key={account.id} className="border-b border-slate-50">
-              <td className="py-3 pr-3 font-medium text-slate-700">{account.username}</td>
-              <td className="py-3 pr-3 text-slate-500">{account.fullName}</td>
-              <td className="py-3 pr-3 text-slate-500">{ROLE_LABELS[account.role] ?? account.role}</td>
-              <td className="py-3 pr-3 text-slate-500">{STATUS_LABELS[account.status] ?? account.status}</td>
-              <td className="py-3 pr-3 text-slate-500">
-                {account.role === 'admin' ? 'Toàn quyền' : account.managedChapterName ?? 'Không quản lý'}
-              </td>
-              <td className="py-3 pr-3">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <button
-                    className="hover:text-blue-600"
-                    title="Đổi mật khẩu"
-                    onClick={() => setPasswordTarget(account)}
-                  >
-                    <KeyRound size={16} />
-                  </button>
-                  <button
-                    className="hover:text-blue-600"
-                    title="Sửa"
-                    onClick={() => {
-                      setEditingAccount(account);
-                      setFormOpen(true);
-                    }}
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    className="hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30"
-                    title="Xóa"
-                    disabled={account.id === user?.id}
-                    onClick={() => handleDelete(account)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-slate-400">
+              <th className="py-2 pr-3 font-medium">Tên đăng nhập</th>
+              <th className="py-2 pr-3 font-medium">Họ và tên</th>
+              <th className="py-2 pr-3 font-medium">Vai trò</th>
+              <th className="py-2 pr-3 font-medium">Trạng thái</th>
+              <th className="py-2 pr-3 font-medium">Chi đoàn quản lý</th>
+              <th className="py-2 pr-3 font-medium">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {(accounts ?? []).map((account) => (
+              <tr key={account.id} className="border-b border-slate-50">
+                <td className="py-3 pr-3 font-medium text-slate-700">{account.username}</td>
+                <td className="py-3 pr-3 text-slate-500">{account.fullName}</td>
+                <td className="py-3 pr-3 text-slate-500">{ROLE_LABELS[account.role] ?? account.role}</td>
+                <td className="py-3 pr-3 text-slate-500">{STATUS_LABELS[account.status] ?? account.status}</td>
+                <td className="py-3 pr-3 text-slate-500">
+                  {account.role === 'admin' ? 'Toàn quyền' : account.managedChapterName ?? 'Không quản lý'}
+                </td>
+                <td className="py-3 pr-3">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <button
+                      className="hover:text-blue-600"
+                      title="Đổi mật khẩu"
+                      onClick={() => setPasswordTarget(account)}
+                    >
+                      <KeyRound size={16} />
+                    </button>
+                    <button
+                      className="hover:text-blue-600"
+                      title="Sửa"
+                      onClick={() => {
+                        setEditingAccount(account);
+                        setFormOpen(true);
+                      }}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      className="hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Xóa"
+                      disabled={account.id === user?.id}
+                      onClick={() => handleDelete(account)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <UserAccountFormModal
         open={formOpen}

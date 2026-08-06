@@ -68,33 +68,35 @@ export function ReportsPage() {
 
       <div className="rounded-xl bg-white p-5 shadow-sm">
         <h3 className="mb-4 font-semibold text-slate-800">Chi tiết theo {currentLabel}</h3>
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-100 text-slate-400">
-              <th className="py-2 pr-3 font-medium">{currentLabel}</th>
-              <th className="py-2 pr-3 font-medium">Số lượng</th>
-              <th className="py-2 pr-3 font-medium">Tỷ lệ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.label} className="border-b border-slate-50">
-                <td className="py-3 pr-3 font-medium text-slate-700">{item.label}</td>
-                <td className="py-3 pr-3 text-slate-500">{item.count}</td>
-                <td className="py-3 pr-3 text-slate-500">
-                  {total > 0 ? Math.round((item.count / total) * 1000) / 10 : 0}%
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 text-slate-400">
+                <th className="py-2 pr-3 font-medium">{currentLabel}</th>
+                <th className="py-2 pr-3 font-medium">Số lượng</th>
+                <th className="py-2 pr-3 font-medium">Tỷ lệ</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td className="py-3 pr-3 font-semibold text-slate-700">Tổng cộng</td>
-              <td className="py-3 pr-3 font-semibold text-slate-700">{total}</td>
-              <td className="py-3 pr-3 font-semibold text-slate-700">100%</td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.label} className="border-b border-slate-50">
+                  <td className="py-3 pr-3 font-medium text-slate-700">{item.label}</td>
+                  <td className="py-3 pr-3 text-slate-500">{item.count}</td>
+                  <td className="py-3 pr-3 text-slate-500">
+                    {total > 0 ? Math.round((item.count / total) * 1000) / 10 : 0}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td className="py-3 pr-3 font-semibold text-slate-700">Tổng cộng</td>
+                <td className="py-3 pr-3 font-semibold text-slate-700">{total}</td>
+                <td className="py-3 pr-3 font-semibold text-slate-700">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
 
       <div className="rounded-xl bg-white p-5 shadow-sm">

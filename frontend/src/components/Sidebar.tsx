@@ -33,8 +33,11 @@ interface NavGroup {
   items: NavItem[];
 }
 
-export function Sidebar({ open }: { open: boolean }) {
+export function Sidebar({ open, onClose }: { open: boolean; onClose?: () => void }) {
   const { user } = useAuth();
+  const closeOnMobile = () => {
+    if (window.innerWidth < 768) onClose?.();
+  };
   const { data: settings } = useQuery({ queryKey: ['app-settings'], queryFn: fetchAppSettings });
 
   const isAdmin = user?.role === 'admin';
@@ -82,11 +85,19 @@ export function Sidebar({ open }: { open: boolean }) {
   ];
 
   return (
-    <aside
-      className={`h-screen min-w-0 flex-shrink-0 overflow-hidden bg-[#0b2a6b] text-white transition-all duration-300 ${
-        open ? 'w-64' : 'w-0'
-      }`}
-    >
+    <>
+      {open && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 h-screen max-md:w-64 min-w-0 flex-shrink-0 overflow-hidden bg-[#0b2a6b] text-white transition-transform duration-300 md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-[width] md:duration-300 ${
+          open ? 'translate-x-0 md:w-64' : '-translate-x-full md:w-0'
+        }`}
+      >
       <div className="flex h-screen w-64 flex-col">
         <div className="flex items-center gap-3 px-5 py-5">
           {settings?.logoUrl ? (
@@ -117,6 +128,7 @@ export function Sidebar({ open }: { open: boolean }) {
                   key={item.path}
                   to={item.path}
                   end
+                  onClick={closeOnMobile}
                   className={({ isActive }) =>
                     `mb-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                       isActive ? 'bg-white text-[#0b2a6b] font-medium' : 'text-blue-100 hover:bg-white/10'
@@ -135,6 +147,7 @@ export function Sidebar({ open }: { open: boolean }) {
           Designer by Loc Lee
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

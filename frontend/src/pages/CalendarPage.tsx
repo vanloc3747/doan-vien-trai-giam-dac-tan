@@ -241,7 +241,7 @@ export function CalendarPage() {
       </div>
       <div className="grid grid-cols-7 gap-1">
         {cells.map((day, idx) => {
-          if (day == null) return <div key={idx} className="min-h-[88px] rounded-lg bg-slate-50/50" />;
+          if (day == null) return <div key={idx} className="min-h-[64px] sm:min-h-[88px] rounded-lg bg-slate-50/50" />;
           const dateKey = toDateKey(viewDate.year, viewDate.month, day);
           const dayNotes = notesByDate.get(dateKey) ?? [];
           const isToday = dateKey === todayKey;
@@ -249,7 +249,7 @@ export function CalendarPage() {
             <button
               key={idx}
               onClick={() => setSelectedDateKey(dateKey)}
-              className={`flex min-h-[88px] flex-col items-start rounded-lg border p-2 text-left text-sm transition-colors hover:border-blue-300 hover:bg-blue-50/50 ${
+              className={`flex min-h-[64px] sm:min-h-[88px] flex-col items-start rounded-lg border p-2 text-left text-sm transition-colors hover:border-blue-300 hover:bg-blue-50/50 ${
                 isToday ? 'border-blue-400 bg-blue-50/40' : 'border-slate-100'
               }`}
             >

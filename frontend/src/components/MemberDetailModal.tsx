@@ -52,7 +52,7 @@ export function MemberDetailModal({ member, onClose }: MemberDetailModalProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Ngày sinh" value={formatDate(member.dateOfBirth)} />
           <Field label="Giới tính" value={member.gender === 'nam' ? 'Nam' : member.gender === 'nu' ? 'Nữ' : 'Khác'} />
           <Field label="Chi đoàn" value={member.chapterName ?? '-'} />
