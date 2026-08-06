@@ -201,6 +201,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
               <th className="py-2 pr-3 font-medium">Ngày sinh</th>
               <th className="py-2 pr-3 font-medium">Giới tính</th>
               <th className="py-2 pr-3 font-medium">Chi đoàn</th>
+              <th className="py-2 pr-3 font-medium">Bộ phận công tác</th>
               <th className="py-2 pr-3 font-medium">Ngày vào Đoàn</th>
               <th className="py-2 pr-3 font-medium">Phân loại</th>
               <th className="py-2 pr-3 font-medium">Chức vụ</th>
@@ -237,6 +238,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
                   {member.gender === 'nam' ? 'Nam' : member.gender === 'nu' ? 'Nữ' : 'Khác'}
                 </td>
                 <td className="py-3 pr-3 text-slate-500">{member.chapterName ?? '-'}</td>
+                <td className="py-3 pr-3 text-slate-500">{member.departmentName ?? '-'}</td>
                 <td className="py-3 pr-3 text-slate-500">{formatDate(member.joinDate)}</td>
                 <td className="py-3 pr-3">
                   <MemberTypeBadge memberType={member.memberType} />
