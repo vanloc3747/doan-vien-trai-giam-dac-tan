@@ -66,16 +66,6 @@ export async function getGenderDistribution() {
   }));
 }
 
-export async function getDepartmentDistribution() {
-  const result = await pool.query(
-    `SELECT d.name AS department, COUNT(m.id) AS count
-     FROM members m
-     JOIN departments d ON d.id = m.department_id
-     GROUP BY d.name ORDER BY count DESC`
-  );
-  return result.rows.map((r) => ({ department: r.department, count: parseInt(r.count, 10) }));
-}
-
 export type ReportDimension = 'gender' | 'chapter' | 'department' | 'memberType' | 'roleTitle' | 'ageGroup';
 
 const GENDER_LABELS: Record<string, string> = { nam: 'Nam', nu: 'Nữ', khac: 'Khác' };

@@ -64,11 +64,6 @@ export interface GenderDistributionItem {
   percentage: number;
 }
 
-export interface DepartmentDistributionItem {
-  department: string;
-  count: number;
-}
-
 export type ReportDimension = 'gender' | 'chapter' | 'department' | 'memberType' | 'roleTitle' | 'ageGroup';
 
 export interface ReportItem {

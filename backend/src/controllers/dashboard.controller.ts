@@ -3,7 +3,6 @@ import { AuthedRequest } from '../middleware/auth';
 import {
   getDashboardStats,
   getGenderDistribution,
-  getDepartmentDistribution,
   getBirthdaysThisMonth,
   getReportByDimension,
   type ReportDimension,
@@ -24,10 +23,6 @@ export async function stats(req: AuthedRequest, res: Response) {
 
 export async function genderDistribution(req: AuthedRequest, res: Response) {
   res.json(await getGenderDistribution());
-}
-
-export async function departmentDistribution(req: AuthedRequest, res: Response) {
-  res.json(await getDepartmentDistribution());
 }
 
 export async function birthdays(req: AuthedRequest, res: Response) {

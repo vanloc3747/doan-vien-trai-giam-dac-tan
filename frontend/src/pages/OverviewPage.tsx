@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Users, UserPlus, ShieldCheck, Repeat2 } from 'lucide-react';
 import { StatCard } from '../components/StatCard';
 import { GenderDonutPanel } from '../components/GenderDonutPanel';
-import { DepartmentBarPanel } from '../components/DepartmentBarPanel';
+import { ChapterDonutPanel } from '../components/ChapterDonutPanel';
 import { BirthdayListPanel } from '../components/BirthdayListPanel';
 import { MemberTable } from '../components/MemberTable';
 import { fetchDashboardStats } from '../api/dashboard';
@@ -45,7 +45,7 @@ export function OverviewPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <GenderDonutPanel />
-        <DepartmentBarPanel />
+        <ChapterDonutPanel />
         <BirthdayListPanel />
       </div>
 

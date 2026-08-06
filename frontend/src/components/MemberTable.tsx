@@ -60,7 +60,7 @@ export function MemberTable({ embedded = false }: { embedded?: boolean }) {
     queryClient.invalidateQueries({ queryKey: ['members'] });
     queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     queryClient.invalidateQueries({ queryKey: ['gender-distribution'] });
-    queryClient.invalidateQueries({ queryKey: ['department-distribution'] });
+    queryClient.invalidateQueries({ queryKey: ['report'] });
     queryClient.invalidateQueries({ queryKey: ['birthdays'] });
   };
 
