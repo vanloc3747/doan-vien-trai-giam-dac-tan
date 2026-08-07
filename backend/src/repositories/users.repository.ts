@@ -8,6 +8,7 @@ export interface UserRow {
   role: 'admin' | 'can_bo_doan';
   status: 'pending' | 'active' | 'rejected';
   managed_chapter_id: number | null;
+  avatar_url: string | null;
 }
 
 export async function findUserByUsername(username: string): Promise<UserRow | null> {
@@ -49,11 +50,20 @@ export async function updateUserPassword(id: number, passwordHash: string) {
   await pool.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, id]);
 }
 
-export async function updateUserFullName(id: number, fullName: string) {
+export async function updateUserProfile(id: number, input: { fullName: string; username: string }) {
   const result = await pool.query(
-    `UPDATE users SET full_name = $1, updated_at = now() WHERE id = $2
-     RETURNING id, username, full_name AS "fullName", role, managed_chapter_id AS "managedChapterId"`,
-    [fullName, id]
+    `UPDATE users SET full_name = $1, username = $2, updated_at = now() WHERE id = $3
+     RETURNING id, username, full_name AS "fullName", role, managed_chapter_id AS "managedChapterId", avatar_url AS "avatarUrl"`,
+    [input.fullName, input.username, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserAvatar(id: number, avatarUrl: string | null) {
+  const result = await pool.query(
+    `UPDATE users SET avatar_url = $1, updated_at = now() WHERE id = $2
+     RETURNING id, username, full_name AS "fullName", role, managed_chapter_id AS "managedChapterId", avatar_url AS "avatarUrl"`,
+    [avatarUrl, id]
   );
   return result.rows[0] ?? null;
 }

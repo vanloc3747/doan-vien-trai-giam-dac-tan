@@ -84,6 +84,7 @@ export interface AuthUser {
   fullName: string;
   role: 'admin' | 'can_bo_doan';
   managedChapterId: number | null;
+  avatarUrl: string | null;
 }
 
 export interface UserAccount {

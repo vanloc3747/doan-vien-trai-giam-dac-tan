@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, ApiError, API_BASE_URL } from './client';
 import type { AuthUser, PendingAccount, UserAccount } from '../types';
 
 export function login(username: string, password: string) {
@@ -27,11 +27,32 @@ export function changePassword(currentPassword: string, newPassword: string) {
   });
 }
 
-export function updateProfile(fullName: string) {
+export function updateProfile(fullName: string, username: string) {
   return apiFetch<AuthUser>('/auth/me/profile', {
     method: 'PATCH',
-    body: JSON.stringify({ fullName }),
+    body: JSON.stringify({ fullName, username }),
   });
+}
+
+export async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await fetch(`${API_BASE_URL}/auth/me/avatar`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (!res.ok) {
+    let message = 'Đã xảy ra lỗi khi tải ảnh lên';
+    try {
+      const body = await res.json();
+      message = body.error ?? message;
+    } catch {
+      // ignore parse error
+    }
+    throw new ApiError(res.status, message);
+  }
+  return res.json() as Promise<AuthUser>;
 }
 
 export function fetchPendingAccounts() {

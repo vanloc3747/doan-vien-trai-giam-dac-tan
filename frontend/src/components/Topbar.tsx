@@ -157,8 +157,12 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-slate-50"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
-                {(user?.fullName ?? '?').charAt(0)}
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                ) : (
+                  (user?.fullName ?? '?').charAt(0)
+                )}
               </div>
               <div className="hidden text-left sm:block">
                 <div className="text-sm font-medium text-slate-800">{user?.fullName}</div>
@@ -171,8 +175,12 @@ export function Topbar({ title, breadcrumb, onToggleSidebar }: TopbarProps) {
             {menuOpen && (
               <div className="absolute right-0 top-full z-20 mt-2 w-[calc(100vw-1.5rem)] rounded-xl border border-slate-100 bg-white p-4 shadow-lg sm:w-64">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-100 text-base font-semibold text-blue-700">
-                    {(user?.fullName ?? '?').charAt(0)}
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-base font-semibold text-blue-700">
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                    ) : (
+                      (user?.fullName ?? '?').charAt(0)
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-slate-800">{user?.fullName}</div>

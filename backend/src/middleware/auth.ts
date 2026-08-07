@@ -3,7 +3,14 @@ import jwt from 'jsonwebtoken';
 import { findUserById } from '../repositories/users.repository';
 
 export interface AuthedRequest extends Request {
-  user?: { id: number; username: string; fullName: string; role: string; managedChapterId: number | null };
+  user?: {
+    id: number;
+    username: string;
+    fullName: string;
+    role: string;
+    managedChapterId: number | null;
+    avatarUrl: string | null;
+  };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -29,6 +36,7 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
       fullName: user.full_name,
       role: user.role,
       managedChapterId: user.managed_chapter_id,
+      avatarUrl: user.avatar_url,
     };
     next();
   } catch {

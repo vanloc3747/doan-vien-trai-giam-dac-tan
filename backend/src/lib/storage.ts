@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 export const MEMBER_PHOTOS_BUCKET = 'member-photos';
 export const BRANDING_BUCKET = 'branding';
 export const ACTIVITY_REPORT_IMAGES_BUCKET = 'activity-report-images';
+export const USER_AVATARS_BUCKET = 'user-avatars';
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -76,6 +77,23 @@ export function deleteActivityReportImage(objectPath: string) {
 
 export function getActivityReportImageSignedUrls(paths: (string | null | undefined)[], expiresIn = 3600) {
   return getSignedUrls(ACTIVITY_REPORT_IMAGES_BUCKET, paths, expiresIn);
+}
+
+export function uploadUserAvatar(buffer: Buffer, mimetype: string) {
+  return uploadObject(USER_AVATARS_BUCKET, 'avatar', buffer, mimetype);
+}
+
+export function deleteUserAvatar(objectPath: string) {
+  return deleteObject(USER_AVATARS_BUCKET, objectPath);
+}
+
+export function getUserAvatarSignedUrls(paths: (string | null | undefined)[], expiresIn = 3600) {
+  return getSignedUrls(USER_AVATARS_BUCKET, paths, expiresIn);
+}
+
+export async function getUserAvatarSignedUrl(path: string | null | undefined): Promise<string | null> {
+  const [url] = await getUserAvatarSignedUrls([path]);
+  return url;
 }
 
 export function uploadBrandingLogo(buffer: Buffer, mimetype: string) {

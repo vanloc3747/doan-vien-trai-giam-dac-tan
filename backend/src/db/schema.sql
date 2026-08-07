@@ -93,6 +93,7 @@ CREATE TABLE users (
   status account_status_enum NOT NULL DEFAULT 'pending',
   member_id INTEGER REFERENCES members(id) ON DELETE SET NULL,
   managed_chapter_id INTEGER REFERENCES chapters(id) ON DELETE SET NULL,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

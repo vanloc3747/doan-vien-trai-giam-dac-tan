@@ -7,10 +7,23 @@ import {
   findUserById,
   createUser,
   updateUserPassword,
-  updateUserFullName,
+  updateUserProfile,
+  updateUserAvatar,
 } from '../repositories/users.repository';
+import { uploadUserAvatar, deleteUserAvatar, getUserAvatarSignedUrl } from '../lib/storage';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+async function serializeUser(u: {
+  id: number;
+  username: string;
+  fullName: string;
+  role: string;
+  managedChapterId: number | null;
+  avatarUrl: string | null;
+}) {
+  return { ...u, avatarUrl: await getUserAvatarSignedUrl(u.avatarUrl) };
+}
 
 export async function register(req: AuthedRequest, res: Response) {
   const schema = z.object({
@@ -57,13 +70,16 @@ export async function login(req: AuthedRequest, res: Response) {
     secure: isProd,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.json({
-    id: user.id,
-    username: user.username,
-    fullName: user.full_name,
-    role: user.role,
-    managedChapterId: user.managed_chapter_id,
-  });
+  res.json(
+    await serializeUser({
+      id: user.id,
+      username: user.username,
+      fullName: user.full_name,
+      role: user.role,
+      managedChapterId: user.managed_chapter_id,
+      avatarUrl: user.avatar_url,
+    })
+  );
 }
 
 export async function logout(req: AuthedRequest, res: Response) {
@@ -72,7 +88,7 @@ export async function logout(req: AuthedRequest, res: Response) {
 }
 
 export async function me(req: AuthedRequest, res: Response) {
-  res.json(req.user);
+  res.json(await serializeUser(req.user!));
 }
 
 export async function changePassword(req: AuthedRequest, res: Response) {
@@ -91,9 +107,27 @@ export async function changePassword(req: AuthedRequest, res: Response) {
 }
 
 export async function updateProfile(req: AuthedRequest, res: Response) {
-  const schema = z.object({ fullName: z.string().min(1) });
-  const { fullName } = schema.parse(req.body);
+  const schema = z.object({ fullName: z.string().min(1), username: z.string().min(3) });
+  const { fullName, username } = schema.parse(req.body);
 
-  const updated = await updateUserFullName(req.user!.id, fullName);
-  res.json(updated);
+  const existing = await findUserByUsername(username);
+  if (existing && existing.id !== req.user!.id) {
+    return res.status(409).json({ error: 'Tên đăng nhập đã tồn tại' });
+  }
+
+  const updated = await updateUserProfile(req.user!.id, { fullName, username });
+  res.json(await serializeUser(updated!));
+}
+
+export async function uploadAvatarHandler(req: AuthedRequest, res: Response) {
+  if (!req.file) return res.status(400).json({ error: 'Không có file ảnh nào được gửi lên' });
+
+  const existing = await findUserById(req.user!.id);
+  if (!existing) return res.status(404).json({ error: 'Không tìm thấy tài khoản' });
+
+  const objectPath = await uploadUserAvatar(req.file.buffer, req.file.mimetype);
+  if (existing.avatar_url) await deleteUserAvatar(existing.avatar_url);
+
+  const updated = await updateUserAvatar(req.user!.id, objectPath);
+  res.json(await serializeUser(updated!));
 }
