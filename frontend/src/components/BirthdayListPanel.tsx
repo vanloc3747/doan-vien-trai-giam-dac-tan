@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Gift } from 'lucide-react';
 import { fetchBirthdays } from '../api/dashboard';
+import { BirthdayListModal } from './BirthdayListModal';
 
 function formatDob(dob: string) {
   const d = new Date(dob);
@@ -9,12 +11,18 @@ function formatDob(dob: string) {
 
 export function BirthdayListPanel() {
   const { data } = useQuery({ queryKey: ['birthdays'], queryFn: fetchBirthdays });
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-semibold text-slate-800">Sinh nhật đoàn viên trong tháng</h3>
-        <button className="text-xs font-medium text-blue-600 hover:underline">Xem tất cả</button>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="text-xs font-medium text-blue-600 hover:underline"
+        >
+          Xem tất cả
+        </button>
       </div>
       <div className="space-y-3">
         {(data ?? []).slice(0, 5).map((item) => (
@@ -33,6 +41,8 @@ export function BirthdayListPanel() {
           <div className="text-sm text-slate-400">Không có sinh nhật nào trong tháng này.</div>
         )}
       </div>
+
+      <BirthdayListModal open={modalOpen} birthdays={data ?? []} onClose={() => setModalOpen(false)} />
     </div>
   );
 }
