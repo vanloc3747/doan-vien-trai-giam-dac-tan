@@ -151,3 +151,20 @@ CREATE TABLE activity_report_images (
 
 CREATE INDEX idx_activity_reports_plan ON activity_reports(plan_id);
 CREATE INDEX idx_activity_report_images_report ON activity_report_images(report_id);
+
+-- Bật Row Level Security cho mọi bảng: toàn bộ truy cập dữ liệu đi qua backend Express
+-- (kết nối bằng role postgres, có BYPASSRLS nên không bị ảnh hưởng). Việc bật RLS chỉ nhằm
+-- chặn API PostgREST tự sinh của Supabase (qua anon/service key) truy cập thẳng vào các bảng này.
+ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE role_titles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE committee_positions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE member_commendations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE member_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calendar_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_report_images ENABLE ROW LEVEL SECURITY;
