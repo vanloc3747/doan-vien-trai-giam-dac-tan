@@ -152,6 +152,22 @@ CREATE TABLE activity_report_images (
 CREATE INDEX idx_activity_reports_plan ON activity_reports(plan_id);
 CREATE INDEX idx_activity_report_images_report ON activity_report_images(report_id);
 
+CREATE TABLE documents (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  category VARCHAR(100),
+  file_path TEXT NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(10) NOT NULL, -- 'pdf' | 'image'
+  file_size INTEGER,
+  uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_documents_category ON documents(category);
+CREATE INDEX idx_documents_title_search ON documents USING gin (to_tsvector('simple', title));
+
 -- Bật Row Level Security cho mọi bảng: toàn bộ truy cập dữ liệu đi qua backend Express
 -- (kết nối bằng role postgres, có BYPASSRLS nên không bị ảnh hưởng). Việc bật RLS chỉ nhằm
 -- chặn API PostgREST tự sinh của Supabase (qua anon/service key) truy cập thẳng vào các bảng này.
@@ -168,3 +184,4 @@ ALTER TABLE calendar_notes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_report_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;

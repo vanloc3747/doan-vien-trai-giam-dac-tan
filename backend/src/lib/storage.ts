@@ -5,11 +5,13 @@ export const MEMBER_PHOTOS_BUCKET = 'member-photos';
 export const BRANDING_BUCKET = 'branding';
 export const ACTIVITY_REPORT_IMAGES_BUCKET = 'activity-report-images';
 export const USER_AVATARS_BUCKET = 'user-avatars';
+export const DOCUMENTS_BUCKET = 'documents';
 
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
   'image/webp': '.webp',
+  'application/pdf': '.pdf',
 };
 
 function randomFilename(prefix: string, mimetype: string) {
@@ -108,4 +110,16 @@ export function getBrandingPublicUrl(objectPath: string | null): string | null {
   if (!objectPath) return null;
   const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(objectPath);
   return data.publicUrl;
+}
+
+export function uploadDocumentFile(buffer: Buffer, mimetype: string) {
+  return uploadObject(DOCUMENTS_BUCKET, 'document', buffer, mimetype);
+}
+
+export function deleteDocumentFile(objectPath: string) {
+  return deleteObject(DOCUMENTS_BUCKET, objectPath);
+}
+
+export function getDocumentSignedUrls(paths: (string | null | undefined)[], expiresIn = 3600) {
+  return getSignedUrls(DOCUMENTS_BUCKET, paths, expiresIn);
 }

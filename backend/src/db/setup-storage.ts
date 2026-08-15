@@ -4,6 +4,7 @@ import {
   BRANDING_BUCKET,
   ACTIVITY_REPORT_IMAGES_BUCKET,
   USER_AVATARS_BUCKET,
+  DOCUMENTS_BUCKET,
 } from '../lib/storage';
 
 async function ensureBucket(name: string, isPublic: boolean) {
@@ -25,6 +26,7 @@ async function main() {
   await ensureBucket(BRANDING_BUCKET, true);
   await ensureBucket(ACTIVITY_REPORT_IMAGES_BUCKET, false);
   await ensureBucket(USER_AVATARS_BUCKET, false);
+  await ensureBucket(DOCUMENTS_BUCKET, false);
   console.log('Hoàn tất thiết lập Supabase Storage.');
 }
 

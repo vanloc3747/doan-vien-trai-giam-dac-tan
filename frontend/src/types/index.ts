@@ -166,3 +166,18 @@ export interface ActivityReport {
   reportedByManagedChapterName: string | null;
   images: ActivityReportImage[];
 }
+
+export type DocumentFileType = 'pdf' | 'image';
+
+export interface DocumentFile {
+  id: number;
+  title: string;
+  category: string | null;
+  fileName: string;
+  fileType: DocumentFileType;
+  fileSize: number | null;
+  fileUrl: string | null;
+  uploadedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
